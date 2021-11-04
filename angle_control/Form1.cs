@@ -12,11 +12,14 @@ namespace angle_control
 {
     public partial class Form1 : Form
     {
+        private StringBuilder sb = new StringBuilder();
+        private long receive_count = 0;
         public Form1()
         {
             InitializeComponent();
-            serialPort1.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(serialPort1_DataReceived);
-            serialPort1.Encoding = Encoding.GetEncoding("GB2312");
+            
+        serialPort1.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(serialPort1_DataReceived);
+            
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -91,10 +94,10 @@ namespace angle_control
 
 
                     serialPort1.Open();
-                    serialPort1.DataReceived += new SearchForVirtualItemEventHandler(serialPort1_DataReceived);
+
                     button1.Text = "关闭串口";
                     button1.BackColor = Color.Green;
-                    return serialPort1;
+
                 }
             }
             catch (Exception ex)
@@ -125,8 +128,15 @@ namespace angle_control
                 //首先判断串口是否开启
                 if (serialPort1.IsOpen)
                 {
+                    byte[] bytesend = new byte[8];
+                    string[] input = textBox2.Text.Split();
+                    for (int i=0;i<8;i++)
+                    {
+                        bytesend[i] = Convert.ToByte(input[i],16);
+                    }
+
                     //串口处于开启状态，将发送区文本发送
-                    serialPort1.Write(textBox2.Text);
+                    serialPort1.Write(bytesend,0, bytesend.Length);
                 }
             }
             catch (Exception ex)
@@ -151,7 +161,37 @@ namespace angle_control
 
         public void serialPort1_DataReceived(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)
         {
-            serialPort1 _SerialPort = (serialPort1)sender;
+            int num = serialPort1.BytesToRead;      //获取接收缓冲区中的字节数
+            byte[] received_buf = new byte[num];    //声明一个大小为num的字节数据用于存放读出的byte型数据
+
+            receive_count += num;                   //接收字节计数变量增加nun
+            serialPort1.Read(received_buf, 0, num);   //读取接收缓冲区中num个字节到byte数组中
+                                                      //接第二步中的代码
+            sb.Clear();     //防止出错,首先清空字符串构造器
+                            //遍历数组进行字符串转化及拼接
+            foreach (byte b in received_buf)
+            {
+                sb.Append(b.ToString("X2") +' ');
+            }
+            try
+            {
+                //因为要访问UI资源，所以需要使用invoke方式同步ui
+                Invoke((EventHandler)(delegate
+                {
+                    textBox1.AppendText(sb.ToString());
+                }
+                  )
+                );
+            }
+            catch
+            {
+
+            }
+        }
+
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
+            
         }
     }
     }
