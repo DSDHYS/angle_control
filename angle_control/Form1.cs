@@ -399,33 +399,44 @@ namespace angle_control
         public double Ax;
         private void timer1_Tick(object sender, EventArgs e)
         {
-            currentCount += 1;
-            if(f3.chart1.Series[0].Points.Count==100)
+            if (record != "")
             {
-                for (int i=0;i<99;i++)
+                currentCount += 1;
+                if (f3.chart1.Series[0].Points.Count == 100)
                 {
-                    f3.chart1.Series[0].Points[i]= f3.chart1.Series[0].Points[i+1];
+                    f3.chart1.ChartAreas[0].AxisX.Maximum = currentCount;
+                    f3.chart1.ChartAreas[0].AxisX.Minimum = currentCount - 50;
+                    for (int i = 0; i < 99; i++)
+                    {
+                        f3.chart1.Series[0].Points[i] = f3.chart1.Series[0].Points[i + 1];
+                    }
+                    f3.chart1.Series[0].Points.RemoveAt(0);
+                    f3.chart1.Series[0].Points.AddXY(currentCount, Ax);
+
+
+
                 }
-                f3.chart1.Series[0].Points.Last=(currentCount, Ax);
+                else
+                {
+                    f3.chart1.Series[0].Points.AddXY(currentCount, Ax);
+                }
+                string[] record_strs = record.Split();
+                byte[] byteget = new byte[record_strs.Length - 1];
+                button2.PerformClick();
 
-            }
-            else
-            {
-                f3.chart1.Series[0].Points.AddXY(currentCount, Ax);
-            }
-            string[] record_strs = record.Split();
-            byte[] byteget = new byte[record_strs.Length - 1];
-            button2.PerformClick();
-
-            for (int i = 0; i < record_strs.Length - 1; i++)
-            {
-                byteget[i] = Convert.ToByte(record_strs[i], 16);
+                for (int i = 0; i < record_strs.Length - 1; i++)
+                {
+                    byteget[i] = Convert.ToByte(record_strs[i], 16);
+                }
+                Ax = (((short)byteget[3] << 8) | byteget[4]) / 32768 * 180;
             }
 
             //(short)record[3];
 
 
-            Ax = (((short)byteget[3] << 8) | byteget[4]) / 32768 * 180;
+                               
+
+            
         }
     }
     }
