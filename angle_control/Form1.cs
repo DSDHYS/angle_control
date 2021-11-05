@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -14,12 +15,14 @@ namespace angle_control
     {
         private StringBuilder sb = new StringBuilder();
         private long receive_count = 0;
+        public string record;
+        Form2 f2 = new Form2();
+        Form3 f3 = new Form3();
         public Form1()
         {
             InitializeComponent();
             
         serialPort1.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(serialPort1_DataReceived);
-            
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -30,6 +33,12 @@ namespace angle_control
             //}
             //string[] baud = { "43000", "56000", "57600", "115200", "128000", "230400", "256000", "460800" };
             //comboBox2.Items.AddRange(baud);
+            f2.TopLevel = false;
+            //f2.Parent = panel1;
+            this.panel1.Controls.Add(f2);
+            f2.FormBorderStyle = FormBorderStyle.None;
+            f2.Dock = DockStyle.Fill;
+            f2.Show();
             comboBox1.Items.AddRange(System.IO.Ports.SerialPort.GetPortNames());
             comboBox2.Text = Convert.ToString(serialPort1.BaudRate);
             comboBox3.Text = Convert.ToString(serialPort1.DataBits);
@@ -77,7 +86,7 @@ namespace angle_control
                     comboBox3.Enabled = true;
                     comboBox4.Enabled = true;
                     comboBox5.Enabled = true;
-                    textBox1.Text = "";
+                    f2.textBox1.Text = "";
                     textBox2.Text = "";
 
                 }
@@ -123,12 +132,13 @@ namespace angle_control
 
         private void button2_Click_1(object sender, EventArgs e)
         {
+            record = "";
             try
             {
                 //首先判断串口是否开启
                 if (serialPort1.IsOpen)
                 {
-                    textBox1.AppendText("\r\n");
+                    f2.textBox1.AppendText("\r\n");
                     byte[] bytesend = new byte[8];
                     byte[] bytesend_6 = new byte[6];
                     string[] input = textBox2.Text.Split();
@@ -156,6 +166,7 @@ namespace angle_control
                             bytesend[i] = CRC[i - 6];
                         }
                     }
+                    
                     textBox2.Text= BitConverter.ToString(bytesend);
                     textBox2.Text = textBox2.Text.Replace('-', ' ');
                     //串口处于开启状态，将发送区文本发送
@@ -184,9 +195,11 @@ namespace angle_control
 
         public void serialPort1_DataReceived(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)
         {
+
+
             int num = serialPort1.BytesToRead;      //获取接收缓冲区中的字节数
             byte[] received_buf = new byte[num];    //声明一个大小为num的字节数据用于存放读出的byte型数据
-
+            
             receive_count += num;                   //接收字节计数变量增加nun
             serialPort1.Read(received_buf, 0, num);   //读取接收缓冲区中num个字节到byte数组中
                                                       //接第二步中的代码
@@ -201,7 +214,8 @@ namespace angle_control
                 //因为要访问UI资源，所以需要使用invoke方式同步ui
                 Invoke((EventHandler)(delegate
                 {
-                    textBox1.AppendText(sb.ToString());
+                    f2.textBox1.AppendText(sb.ToString());
+                    record+=sb.ToString();
                 }
                   )
                 );
@@ -289,6 +303,129 @@ namespace angle_control
                 return new byte[] { crcRegister_L, crcRegister_H };
             }
 
+        }
+
+        private void panel2_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void toolStripButton1_Click(object sender, EventArgs e)
+        {
+            panel1.Controls.Clear();
+            f2.TopLevel = false;
+            //f2.Parent = panel1;
+            this.panel1.Controls.Add(f2);
+            f2.FormBorderStyle = FormBorderStyle.None;
+            f2.Dock = DockStyle.Fill;
+            f2.Show();
+        }
+
+        private void toolStripButton2_Click(object sender, EventArgs e)
+        {
+            //panel1.Controls.Clear();
+            f2.Visible = false;
+            f3.TopLevel = false;
+            //f2.Parent = panel1;
+            this.panel1.Controls.Add(f3);
+            f3.FormBorderStyle = FormBorderStyle.None;
+            f3.Dock = DockStyle.Fill;
+            f3.Show();
+        }
+
+        //void chart_display()
+        //{
+        //    Draw();
+        //}
+        //delegate void my_delegate();//创建一个代理,图表刷新需要在主线程，所以需要加委托
+        //Queue<double> Q1 = new Queue<double>();
+        //public void Draw()
+        //{
+        //    if (!f3.chart1.InvokeRequired)
+        //    {
+             
+        //        this.f3.chart1.Series["line1"].Points.Clear();
+        //        for (int i = 0; i < FFF_chart.Length; i++)
+        //        {
+        //            f3.chart1.Series["line1"].Points.AddXY(i, FFF_chart[i]);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        my_delegate delegate_FFF = new my_delegate(Draw);
+        //        Invoke(delegate_FFF, new object[] { });//执行唤醒操作
+        //    }
+        //}
+        private void toolStripButton3_Click(object sender, EventArgs e)
+        {
+            //Thread chart_display_th = new Thread(new ThreadStart(chart_display));////////数值显示线程
+            //chart_display_th.Start();
+            //while( toolStripButton4.Click)
+            //{ }
+            string[] record_strs = record.Split();
+            byte[] byteget = new byte[record_strs.Length-1];
+                for (int i = 0; i < record_strs.Length-1; i++)
+                {
+                    byteget[i] = Convert.ToByte(record_strs[i], 16);
+                }
+
+            //(short)record[3];
+            short bs=(short)byteget[3];
+            byte by=byteget[3];
+
+            Ax = (((short)byteget[3]<< 8) | byteget[4]) / 32768 * 180;
+            double Ay = (((short)byteget[5] << 8) | byteget[6]) / 32768 * 180;
+            double Az = (((short)byteget[7] << 8) | byteget[8]) / 32768 * 180;
+            this.timer1.Enabled = true;
+            timer1.Start();
+            //f3.chart1.Series[0].Points.AddXY()
+        }
+
+        private void toolStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+
+        }
+
+        private void toolStripButton4_Click(object sender, EventArgs e)
+        {
+
+        }
+        public int currentCount;
+        public double Ax;
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            currentCount += 1;
+            if(f3.chart1.Series[0].Points.Count==100)
+            {
+                for (int i=0;i<99;i++)
+                {
+                    f3.chart1.Series[0].Points[i]= f3.chart1.Series[0].Points[i+1];
+                }
+                f3.chart1.Series[0].Points.Last=(currentCount, Ax);
+
+            }
+            else
+            {
+                f3.chart1.Series[0].Points.AddXY(currentCount, Ax);
+            }
+            string[] record_strs = record.Split();
+            byte[] byteget = new byte[record_strs.Length - 1];
+            button2.PerformClick();
+
+            for (int i = 0; i < record_strs.Length - 1; i++)
+            {
+                byteget[i] = Convert.ToByte(record_strs[i], 16);
+            }
+
+            //(short)record[3];
+
+
+            Ax = (((short)byteget[3] << 8) | byteget[4]) / 32768 * 180;
         }
     }
     }
