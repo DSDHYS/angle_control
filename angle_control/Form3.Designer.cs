@@ -38,6 +38,8 @@ namespace angle_control
             // 
             // chart1
             // 
+            chartArea1.AxisY.Maximum = 180D;
+            chartArea1.AxisY.Minimum = -180D;
             chartArea1.CursorX.IsUserEnabled = true;
             chartArea1.CursorX.IsUserSelectionEnabled = true;
             chartArea1.Name = "ChartArea1";

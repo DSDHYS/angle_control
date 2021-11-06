@@ -34,8 +34,11 @@ namespace angle_control
             //string[] baud = { "43000", "56000", "57600", "115200", "128000", "230400", "256000", "460800" };
             //comboBox2.Items.AddRange(baud);
             f2.TopLevel = false;
+            f3.TopLevel = false;
             //f2.Parent = panel1;
             this.panel1.Controls.Add(f2);
+            this.panel1.Controls.Add(f3);
+            f3.Visible = false;
             f2.FormBorderStyle = FormBorderStyle.None;
             f2.Dock = DockStyle.Fill;
             f2.Show();
@@ -216,6 +219,46 @@ namespace angle_control
                 {
                     f2.textBox1.AppendText(sb.ToString());
                     record+=sb.ToString();
+                    string[] record_strs = record.Split();
+                    byte[] byteget = new byte[record_strs.Length - 1];
+                    for (int i = 0; i < record_strs.Length - 1; i++)
+                    {
+                        byteget[i] = Convert.ToByte(record_strs[i], 16);
+                    }
+
+                    //(short)record[3];
+                    //short bs=(short)byteget[3];
+                    //int bs_2 = (short)byteget[3]<<8;
+
+                    //byte by = byteget[3];
+                    //bs = (short)byteget[4];
+                    //bs_2 = ((short)byteget[3]<<8)| byteget[4] ;
+
+                    if (record_strs.Length == 12)
+                    {
+
+                        Ax = (short)(((short)byteget[3] << 8) | byteget[4]) / (double)32768 * (double)180;
+                        double Ay = (((short)byteget[5] << 8) | byteget[6]) / 32768 * 180;
+                        double Az = (((short)byteget[7] << 8) | byteget[8]) / 32768 * 180;
+                        if (f3.chart1.Series[0].Points.Count == 100)
+                        {
+                            f3.chart1.ChartAreas[0].AxisX.Maximum = currentCount;
+                            f3.chart1.ChartAreas[0].AxisX.Minimum = currentCount - 50;
+                            for (int i = 0; i < 99; i++)
+                            {
+                                f3.chart1.Series[0].Points[i] = f3.chart1.Series[0].Points[i + 1];
+                            }
+                            f3.chart1.Series[0].Points.RemoveAt(0);
+                            f3.chart1.Series[0].Points.AddXY(currentCount, Ax);
+
+
+
+                        }
+                        else
+                        {
+                            f3.chart1.Series[0].Points.AddXY(currentCount, Ax);
+                        }
+                    }
                 }
                   )
                 );
@@ -317,10 +360,11 @@ namespace angle_control
 
         private void toolStripButton1_Click(object sender, EventArgs e)
         {
-            panel1.Controls.Clear();
+            //panel1.Controls.Clear();
+            f3.Visible = false;
             f2.TopLevel = false;
             //f2.Parent = panel1;
-            this.panel1.Controls.Add(f2);
+            //this.panel1.Controls.Add(f2);
             f2.FormBorderStyle = FormBorderStyle.None;
             f2.Dock = DockStyle.Fill;
             f2.Show();
@@ -332,7 +376,7 @@ namespace angle_control
             f2.Visible = false;
             f3.TopLevel = false;
             //f2.Parent = panel1;
-            this.panel1.Controls.Add(f3);
+            //this.panel1.Controls.Add(f3);
             f3.FormBorderStyle = FormBorderStyle.None;
             f3.Dock = DockStyle.Fill;
             f3.Show();
@@ -367,22 +411,52 @@ namespace angle_control
             //chart_display_th.Start();
             //while( toolStripButton4.Click)
             //{ }
-            string[] record_strs = record.Split();
-            byte[] byteget = new byte[record_strs.Length-1];
-                for (int i = 0; i < record_strs.Length-1; i++)
-                {
-                    byteget[i] = Convert.ToByte(record_strs[i], 16);
-                }
+            //string[] record_strs = record.Split();
+            //byte[] byteget = new byte[record_strs.Length-1];
+            //    for (int i = 0; i < record_strs.Length-1; i++)
+            //    {
+            //        byteget[i] = Convert.ToByte(record_strs[i], 16);
+            //    }
 
-            //(short)record[3];
-            short bs=(short)byteget[3];
-            byte by=byteget[3];
+            ////(short)record[3];
+            ////short bs=(short)byteget[3];
+            ////int bs_2 = (short)byteget[3]<<8;
 
-            Ax = (((short)byteget[3]<< 8) | byteget[4]) / 32768 * 180;
-            double Ay = (((short)byteget[5] << 8) | byteget[6]) / 32768 * 180;
-            double Az = (((short)byteget[7] << 8) | byteget[8]) / 32768 * 180;
-            this.timer1.Enabled = true;
-            timer1.Start();
+            ////byte by = byteget[3];
+            ////bs = (short)byteget[4];
+            ////bs_2 = ((short)byteget[3]<<8)| byteget[4] ;
+
+            //if (record_strs.Length==12)
+            //{
+            //    Ax = (double)(((short)byteget[3] << 8) | byteget[4]) / (double)32768 * (double)180;
+            //    double Ay = (((short)byteget[5] << 8) | byteget[6]) / 32768 * 180;
+            //    double Az = (((short)byteget[7] << 8) | byteget[8]) / 32768 * 180;
+            //    if (f3.chart1.Series[0].Points.Count == 100)
+            //    {
+            //        f3.chart1.ChartAreas[0].AxisX.Maximum = currentCount;
+            //        f3.chart1.ChartAreas[0].AxisX.Minimum = currentCount - 50;
+            //        for (int i = 0; i < 99; i++)
+            //        {
+            //            f3.chart1.Series[0].Points[i] = f3.chart1.Series[0].Points[i + 1];
+            //        }
+            //        f3.chart1.Series[0].Points.RemoveAt(0);
+            //        f3.chart1.Series[0].Points.AddXY(currentCount, Ax);
+
+
+
+            //    }
+            //    else
+            //    {
+            //        f3.chart1.Series[0].Points.AddXY(currentCount, Ax);
+            //    }
+            //}
+
+            if (this.timer1.Enabled==false)
+            {
+                this.timer1.Enabled = true;
+                timer1.Start();
+            }
+
             //f3.chart1.Series[0].Points.AddXY()
         }
 
@@ -393,43 +467,27 @@ namespace angle_control
 
         private void toolStripButton4_Click(object sender, EventArgs e)
         {
-
+            timer1.Stop();
         }
-        public int currentCount;
+        public int currentCount=0;
         public double Ax;
-        private void timer1_Tick(object sender, EventArgs e)
+        public void timer1_Tick(object sender, EventArgs e)
         {
-            if (record != "")
-            {
+
                 currentCount += 1;
-                if (f3.chart1.Series[0].Points.Count == 100)
-                {
-                    f3.chart1.ChartAreas[0].AxisX.Maximum = currentCount;
-                    f3.chart1.ChartAreas[0].AxisX.Minimum = currentCount - 50;
-                    for (int i = 0; i < 99; i++)
-                    {
-                        f3.chart1.Series[0].Points[i] = f3.chart1.Series[0].Points[i + 1];
-                    }
-                    f3.chart1.Series[0].Points.RemoveAt(0);
-                    f3.chart1.Series[0].Points.AddXY(currentCount, Ax);
 
-
-
-                }
-                else
-                {
-                    f3.chart1.Series[0].Points.AddXY(currentCount, Ax);
-                }
-                string[] record_strs = record.Split();
-                byte[] byteget = new byte[record_strs.Length - 1];
                 button2.PerformClick();
+                toolStripButton3.PerformClick();
+                //string[] record_strs = record.Split();
+                //byte[] byteget = new byte[record_strs.Length - 1];
+                //button2.PerformClick();
 
-                for (int i = 0; i < record_strs.Length - 1; i++)
-                {
-                    byteget[i] = Convert.ToByte(record_strs[i], 16);
-                }
-                Ax = (((short)byteget[3] << 8) | byteget[4]) / 32768 * 180;
-            }
+                //for (int i = 0; i < record_strs.Length - 1; i++)
+                //{
+                //    byteget[i] = Convert.ToByte(record_strs[i], 16);
+                //}
+                //Ax = (((short)byteget[3] << 8) | byteget[4]) / 32768 * 180;
+
 
             //(short)record[3];
 
