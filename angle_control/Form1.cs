@@ -238,8 +238,8 @@ namespace angle_control
                     {
 
                         Ax = (short)(((short)byteget[3] << 8) | byteget[4]) / (double)32768 * (double)180;
-                        double Ay = (((short)byteget[5] << 8) | byteget[6]) / 32768 * 180;
-                        double Az = (((short)byteget[7] << 8) | byteget[8]) / 32768 * 180;
+                        Ay = (short)(((short)byteget[5] << 8) | byteget[6]) / (double)32768 * (double)180;
+                        Az = (short)(((short)byteget[7] << 8) | byteget[8]) / (double)32768 * (double)180;
                         if (f3.chart1.Series[0].Points.Count == 100)
                         {
                             f3.chart1.ChartAreas[0].AxisX.Maximum = currentCount;
@@ -247,16 +247,24 @@ namespace angle_control
                             for (int i = 0; i < 99; i++)
                             {
                                 f3.chart1.Series[0].Points[i] = f3.chart1.Series[0].Points[i + 1];
+                                f3.chart1.Series[1].Points[i] = f3.chart1.Series[1].Points[i + 1];
+                                f3.chart1.Series[2].Points[i] = f3.chart1.Series[2].Points[i + 1];
                             }
                             f3.chart1.Series[0].Points.RemoveAt(0);
                             f3.chart1.Series[0].Points.AddXY(currentCount, Ax);
+                            f3.chart1.Series[1].Points.RemoveAt(0);
+                            f3.chart1.Series[1].Points.AddXY(currentCount, Ay);
+                            f3.chart1.Series[2].Points.RemoveAt(0);
+                            f3.chart1.Series[2].Points.AddXY(currentCount, Az);
 
 
 
                         }
                         else
                         {
-                            f3.chart1.Series[0].Points.AddXY(currentCount, Ax);
+                            f3.chart1.Series[0].Points.AddXY(currentCount, Ax); 
+                            f3.chart1.Series[1].Points.AddXY(currentCount, Ay);
+                            f3.chart1.Series[2].Points.AddXY(currentCount, Az);
                         }
                     }
                 }
@@ -471,6 +479,8 @@ namespace angle_control
         }
         public int currentCount=0;
         public double Ax;
+        public double Ay;
+        public double Az;
         public void timer1_Tick(object sender, EventArgs e)
         {
 
@@ -495,6 +505,11 @@ namespace angle_control
                                
 
             
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            textBox2.Text = "50 03 00 3D 00 03 99 86";
         }
     }
     }
