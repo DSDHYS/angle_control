@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -17,12 +18,19 @@ namespace angle_control
         private long receive_count = 0;
         public string record;
         Form2 f2 = new Form2();
+        Form4 f4 = new Form4();
+        public string send_insruction="";//to receive the instuction
         Form3 f3 = new Form3();
+        double[] Acceleration_x =new double[2];
+        double[] Acceleration_y = new double[2];
+        double Acceleration_z;
+        double[] distance=new double [3];
+        double[] velocty =new double[3];
         public Form1()
         {
             InitializeComponent();
             
-        serialPort1.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(serialPort1_DataReceived);
+        //serialPort1.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(serialPort1_DataReceived);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -33,11 +41,15 @@ namespace angle_control
             //}
             //string[] baud = { "43000", "56000", "57600", "115200", "128000", "230400", "256000", "460800" };
             //comboBox2.Items.AddRange(baud);
+            
+
             f2.TopLevel = false;
             f3.TopLevel = false;
+            f4.TopLevel = false;
             //f2.Parent = panel1;
             this.panel1.Controls.Add(f2);
             this.panel1.Controls.Add(f3);
+            this.panel1.Controls.Add(f4);
             f3.Visible = false;
             f2.FormBorderStyle = FormBorderStyle.None;
             f2.Dock = DockStyle.Fill;
@@ -51,7 +63,7 @@ namespace angle_control
             //comboBox3.Text = "8";
             //comboBox4.Text = "None";
             //comboBox5.Text = "1";
-            button1.BackColor = Color.Green;
+            button1.BackColor = Color.SteelBlue;
 
         }
 
@@ -83,14 +95,14 @@ namespace angle_control
                 {
                     serialPort1.Close();
                     button1.Text = "打开串口";
-                    button1.BackColor = Color.Green;
+                    button1.BackColor = Color.SteelBlue;
                     comboBox1.Enabled = true;
                     comboBox2.Enabled = true;
                     comboBox3.Enabled = true;
                     comboBox4.Enabled = true;
                     comboBox5.Enabled = true;
                     f2.textBox1.Text = "";
-                    textBox2.Text = "";
+                    send_insruction = "";
 
                 }
                 else
@@ -108,7 +120,7 @@ namespace angle_control
                     serialPort1.Open();
 
                     button1.Text = "关闭串口";
-                    button1.BackColor = Color.Green;
+                    button1.BackColor = Color.Gray;
 
                 }
             }
@@ -119,21 +131,20 @@ namespace angle_control
                 comboBox1.Items.AddRange(System.IO.Ports.SerialPort.GetPortNames());
                 System.Media.SystemSounds.Beep.Play();//警告提示音
                 button1.Text = "打开串口";
-                button1.BackColor = Color.Gray;
                 MessageBox.Show(ex.Message);
                 comboBox1.Enabled = true;
                 comboBox2.Enabled = true;
                 comboBox3.Enabled = true;
                 comboBox4.Enabled = true;
                 comboBox5.Enabled = true;
-                button1.BackColor = Color.Green;
+                button1.BackColor = Color.SteelBlue;
 
             }
             }
 
 
 
-        private void button2_Click_1(object sender, EventArgs e)
+        private void Send()
         {
             record = "";
             try
@@ -144,7 +155,7 @@ namespace angle_control
                     f2.textBox1.AppendText("\r\n");
                     byte[] bytesend = new byte[8];
                     byte[] bytesend_6 = new byte[6];
-                    string[] input = textBox2.Text.Split();
+                    string[] input = send_insruction.Split();
                     if (input.Length == 8)
                     {
                         for (int i = 0; i < 8; i++)
@@ -159,7 +170,7 @@ namespace angle_control
                             bytesend_6[i] = Convert.ToByte(input[i], 16);
                             //textBox2.AppendText(BitConverter.ToString(Crc.GetModbusCrc16(bytesend_6)[0]));
                         }
-                        byte[] CRC =Crc.GetModbusCrc16(bytesend_6);
+                        byte[] CRC = Crc.GetModbusCrc16(bytesend_6);
                         for (int i = 0; i < 6; i++)
                         {
                             bytesend[i] = Convert.ToByte(input[i], 16);
@@ -169,11 +180,11 @@ namespace angle_control
                             bytesend[i] = CRC[i - 6];
                         }
                     }
-                    
-                    textBox2.Text= BitConverter.ToString(bytesend);
-                    textBox2.Text = textBox2.Text.Replace('-', ' ');
+
+                    send_insruction = BitConverter.ToString(bytesend);
+                    send_insruction = send_insruction.Replace('-', ' ');
                     //串口处于开启状态，将发送区文本发送
-                    serialPort1.Write(bytesend,0, bytesend.Length);
+                    serialPort1.Write(bytesend, 0, bytesend.Length);
                 }
             }
             catch (Exception ex)
@@ -186,7 +197,7 @@ namespace angle_control
                 //响铃并显示异常给用户
                 System.Media.SystemSounds.Beep.Play();
                 button1.Text = "打开串口";
-                button1.BackColor = Color.Green;
+                button1.BackColor = Color.SteelBlue;
                 MessageBox.Show(ex.Message);
                 comboBox1.Enabled = true;
                 comboBox2.Enabled = true;
@@ -234,7 +245,7 @@ namespace angle_control
                     //bs = (short)byteget[4];
                     //bs_2 = ((short)byteget[3]<<8)| byteget[4] ;
 
-                    if (record_strs.Length == 12)
+                    if (record_strs.Length == 12&& send_insruction== "50 03 00 3D 00 03 99 86")
                     {
 
                         Ax = (short)(((short)byteget[3] << 8) | byteget[4]) / (double)32768 * (double)180;
@@ -265,6 +276,61 @@ namespace angle_control
                             f3.chart1.Series[0].Points.AddXY(currentCount, Ax); 
                             f3.chart1.Series[1].Points.AddXY(currentCount, Ay);
                             f3.chart1.Series[2].Points.AddXY(currentCount, Az);
+                        }
+                    }
+                    if (record_strs.Length == 12 && send_insruction == "50 03 00 34 00 03 49 84")
+                    {
+                        Acceleration_x[1] = (short)(((short)byteget[3] << 8) | byteget[4]) / (double)32768 * (double)(16 * 9.8);
+                        if (Acceleration_x[1]<0.05 && -0.05<Acceleration_x[1] )
+                        {
+                            Acceleration_x[1] = 0;
+                        }
+                        Debug.WriteLine(Acceleration_x[1]);
+                        
+                        Acceleration_y[1] = (short)(((short)byteget[5] << 8) | byteget[6]) / (double)32768 * (double)(16 * 9.8);
+                        if (Acceleration_y[1] < 0.05 && -0.05 < Acceleration_y[1])
+                        {
+                            Acceleration_y[1] = 0;
+                        }
+                        Acceleration_z = (short)(((short)byteget[7] << 8) | byteget[8]) / (double)32768 * (double)(16 * 9.8)-9.87;
+                        
+                        velocty[0] = velocty[0] + (Acceleration_x[1] + Acceleration_x[0]) * 0.1/2;
+                        distance[0] = distance[0] + 0.1 * velocty[0]+5* (Acceleration_x[1] - Acceleration_x[0]) * Math.Pow(0.1,2)+0.1* Acceleration_x[0];
+                        Acceleration_x[0] = Acceleration_x[1];
+
+                        velocty[1] = velocty[1] + (Acceleration_y[1] + Acceleration_y[0]) * 0.1 / 2;
+                        distance[1] = distance[1] + 0.1 * velocty[1] + 5 * (Acceleration_y[1] - Acceleration_y[0]) * Math.Pow(0.1, 2) + 0.1 * Acceleration_y[0];
+                        Acceleration_y[0] = Acceleration_y[1];
+
+                        f4.chart1.Series[0].Points.AddXY(distance[0], distance[1]);
+
+                        if (f3.chart1.Series[0].Points.Count == 100)
+                        {
+                            f3.chart1.ChartAreas[0].AxisX.Maximum = currentCount;
+                            f3.chart1.ChartAreas[0].AxisX.Minimum = currentCount - 50;
+
+                            for (int i = 0; i < 99; i++)
+                            {
+                                f3.chart1.Series[0].Points[i] = f3.chart1.Series[0].Points[i + 1];
+                                f3.chart1.Series[1].Points[i] = f3.chart1.Series[1].Points[i + 1];
+                                f3.chart1.Series[2].Points[i] = f3.chart1.Series[2].Points[i + 1];
+                                
+                            }
+                            f3.chart1.Series[0].Points.RemoveAt(0);
+                            f3.chart1.Series[0].Points.AddXY(currentCount, Acceleration_x[1]);
+                            f3.chart1.Series[1].Points.RemoveAt(0);
+                            f3.chart1.Series[1].Points.AddXY(currentCount, Acceleration_y[1]);
+                            f3.chart1.Series[2].Points.RemoveAt(0);
+                            f3.chart1.Series[2].Points.AddXY(currentCount, Acceleration_z);
+
+
+
+                        }
+                        else
+                        {
+                            f3.chart1.Series[0].Points.AddXY(currentCount, Acceleration_x[1]);
+                            f3.chart1.Series[1].Points.AddXY(currentCount, Acceleration_y[1]);
+                            f3.chart1.Series[2].Points.AddXY(currentCount, Acceleration_z);
                         }
                     }
                 }
@@ -390,74 +456,10 @@ namespace angle_control
             f3.Show();
         }
 
-        //void chart_display()
-        //{
-        //    Draw();
-        //}
-        //delegate void my_delegate();//创建一个代理,图表刷新需要在主线程，所以需要加委托
-        //Queue<double> Q1 = new Queue<double>();
-        //public void Draw()
-        //{
-        //    if (!f3.chart1.InvokeRequired)
-        //    {
-             
-        //        this.f3.chart1.Series["line1"].Points.Clear();
-        //        for (int i = 0; i < FFF_chart.Length; i++)
-        //        {
-        //            f3.chart1.Series["line1"].Points.AddXY(i, FFF_chart[i]);
-        //        }
-        //    }
-        //    else
-        //    {
-        //        my_delegate delegate_FFF = new my_delegate(Draw);
-        //        Invoke(delegate_FFF, new object[] { });//执行唤醒操作
-        //    }
-        //}
+
         private void toolStripButton3_Click(object sender, EventArgs e)
         {
-            //Thread chart_display_th = new Thread(new ThreadStart(chart_display));////////数值显示线程
-            //chart_display_th.Start();
-            //while( toolStripButton4.Click)
-            //{ }
-            //string[] record_strs = record.Split();
-            //byte[] byteget = new byte[record_strs.Length-1];
-            //    for (int i = 0; i < record_strs.Length-1; i++)
-            //    {
-            //        byteget[i] = Convert.ToByte(record_strs[i], 16);
-            //    }
-
-            ////(short)record[3];
-            ////short bs=(short)byteget[3];
-            ////int bs_2 = (short)byteget[3]<<8;
-
-            ////byte by = byteget[3];
-            ////bs = (short)byteget[4];
-            ////bs_2 = ((short)byteget[3]<<8)| byteget[4] ;
-
-            //if (record_strs.Length==12)
-            //{
-            //    Ax = (double)(((short)byteget[3] << 8) | byteget[4]) / (double)32768 * (double)180;
-            //    double Ay = (((short)byteget[5] << 8) | byteget[6]) / 32768 * 180;
-            //    double Az = (((short)byteget[7] << 8) | byteget[8]) / 32768 * 180;
-            //    if (f3.chart1.Series[0].Points.Count == 100)
-            //    {
-            //        f3.chart1.ChartAreas[0].AxisX.Maximum = currentCount;
-            //        f3.chart1.ChartAreas[0].AxisX.Minimum = currentCount - 50;
-            //        for (int i = 0; i < 99; i++)
-            //        {
-            //            f3.chart1.Series[0].Points[i] = f3.chart1.Series[0].Points[i + 1];
-            //        }
-            //        f3.chart1.Series[0].Points.RemoveAt(0);
-            //        f3.chart1.Series[0].Points.AddXY(currentCount, Ax);
-
-
-
-            //    }
-            //    else
-            //    {
-            //        f3.chart1.Series[0].Points.AddXY(currentCount, Ax);
-            //    }
-            //}
+            
 
             if (this.timer1.Enabled==false)
             {
@@ -486,38 +488,28 @@ namespace angle_control
 
                 currentCount += 1;
 
-                button2.PerformClick();
-                toolStripButton3.PerformClick();
-                //string[] record_strs = record.Split();
-                //byte[] byteget = new byte[record_strs.Length - 1];
-                //button2.PerformClick();
+                Send();
+            //    button2.PerformClick();
+            if (send_insruction == "50 03 00 3D 00 03 99 86")
+            {
+                角度ToolStripMenuItem.PerformClick();
 
-                //for (int i = 0; i < record_strs.Length - 1; i++)
-                //{
-                //    byteget[i] = Convert.ToByte(record_strs[i], 16);
-                //}
-                //Ax = (((short)byteget[3] << 8) | byteget[4]) / 32768 * 180;
+            }
+            if (send_insruction == "50 06 00 01 00 08 D4 4D ")
+            {
+                加速度ToolStripMenuItem1.PerformClick(); 
 
+            }
 
             //(short)record[3];
 
 
-                               
 
-            
+
+
         }
 
-        private void button3_Click(object sender, EventArgs e)
-        {
-            textBox2.Text = "50 03 00 3D 00 03 99 86";
-            button2.PerformClick();
-        }
 
-        private void button4_Click(object sender, EventArgs e)
-        {
-            textBox2.Text = "50 06 00 01 00 08 D4 4D ";
-            button2.PerformClick();
-        }
 
         private void toolStripComboBox1_Click(object sender, EventArgs e)
         {
@@ -526,17 +518,115 @@ namespace angle_control
 
         private void 角度ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            textBox2.Text = "50 03 00 3D 00 03 99 86";
-            button2.PerformClick();
+            send_insruction = "50 03 00 3D 00 03 99 86";
+            //button2.PerformClick();
+            Send();
         }
 
         private void 参考系修改ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            textBox2.Text = "50 06 00 01 00 08 D4 4D ";
-            button2.PerformClick();
+            send_insruction = "50 06 00 01 00 08 D4 4D ";
+            //button2.PerformClick();
+            Send();
         }
 
+        private void button3_Click(object sender, EventArgs e)
+        {
+            if (send_insruction != "")
+            {
+                if (this.timer1.Enabled == false)
+                {
+                    this.timer1.Enabled = true;
+                    timer1.Start();
+                    button3.Text = "停止";
+                    button3.BackColor = Color.Gray;
+                }
+                else
+                {
+                    this.timer1.Enabled = false;
+                    timer1.Stop();
+                    button3.Text = "开始";
+                    button3.BackColor = Color.SteelBlue;
+                }
+            }
+            else
+            {
+                MessageBox.Show("请先选择功能");
+            }
 
+
+
+            
+        }
+
+        private void 数据ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //panel1.Controls.Clear();
+            f3.Visible = false;
+            f2.TopLevel = false;
+            //f2.Parent = panel1;
+            //this.panel1.Controls.Add(f2);
+            f2.FormBorderStyle = FormBorderStyle.None;
+            f2.Dock = DockStyle.Fill;
+            f2.Show();
+        }
+
+        private void 角度ToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            //panel1.Controls.Clear();
+            f2.Visible = false;
+            f3.TopLevel = false;
+            //f2.Parent = panel1;
+            //this.panel1.Controls.Add(f3);
+            f3.FormBorderStyle = FormBorderStyle.None;
+            f3.Dock = DockStyle.Fill;
+            f3.Show();
+        }
+        private void 加速度ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //panel1.Controls.Clear();
+            f2.Visible = false;
+            f3.TopLevel = false;
+            //f2.Parent = panel1;
+            //this.panel1.Controls.Add(f3);
+            f3.FormBorderStyle = FormBorderStyle.None;
+            f3.Dock = DockStyle.Fill;
+            f3.Show();
+        }
+
+        private void 加速度ToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            send_insruction = "50 03 00 34 00 03 49 84";
+            Send();
+        }
+
+        private void 轨迹ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //panel1.Controls.Clear();
+            //f2.Visible = false;
+            f2.Visible = false;
+            f3.Visible = false;
+            f4.TopLevel = false;
+            //f2.Parent = panel1;
+            //this.panel1.Controls.Add(f3);
+            f4.FormBorderStyle = FormBorderStyle.None;
+            f4.Dock = DockStyle.Fill;
+            f4.Show();
+        }
+
+        private void 轨迹ToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            send_insruction = "50 03 00 34 00 03 49 84";
+            Acceleration_x[0] = 0;
+            Acceleration_x[1] = 0;
+            Acceleration_y[0] = 0;
+            Acceleration_y[1] = 0;
+            velocty[0] = 0;
+            velocty[1] = 0;
+            distance[0] = 0;
+            distance[1] = 0;
+            Send();
+        }
     }
     }
 

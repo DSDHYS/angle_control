@@ -47,14 +47,18 @@ namespace angle_control
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
-            this.toolStripButton1 = new System.Windows.Forms.ToolStripTextBox();
-            this.toolStripButton2 = new System.Windows.Forms.ToolStripTextBox();
-            this.toolStripButton3 = new System.Windows.Forms.ToolStripTextBox();
-            this.toolStripButton4 = new System.Windows.Forms.ToolStripTextBox();
             this.toolStripDropDownButton1 = new System.Windows.Forms.ToolStripDropDownButton();
             this.角度ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.参考系修改ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.button3 = new System.Windows.Forms.Button();
+            this.toolStripDropDownButton2 = new System.Windows.Forms.ToolStripDropDownButton();
+            this.数据ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.角度ToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.加速度ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.加速度ToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.轨迹ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.轨迹ToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -65,26 +69,21 @@ namespace angle_control
             // 
             // textBox2
             // 
-            this.textBox2.Location = new System.Drawing.Point(30, 225);
-            this.textBox2.Multiline = true;
+            this.textBox2.Location = new System.Drawing.Point(0, 0);
             this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(282, 134);
-            this.textBox2.TabIndex = 1;
-            this.textBox2.TextChanged += new System.EventHandler(this.textBox2_TextChanged);
+            this.textBox2.Size = new System.Drawing.Size(100, 21);
+            this.textBox2.TabIndex = 13;
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(330, 272);
+            this.button2.Location = new System.Drawing.Point(0, 0);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(45, 29);
-            this.button2.TabIndex = 2;
-            this.button2.Text = "send";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click_1);
+            this.button2.Size = new System.Drawing.Size(75, 23);
+            this.button2.TabIndex = 13;
             // 
             // button1
             // 
-            this.button1.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.button1.BackColor = System.Drawing.Color.SteelBlue;
             this.button1.Location = new System.Drawing.Point(47, 166);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(132, 23);
@@ -203,18 +202,15 @@ namespace angle_control
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panel1.Location = new System.Drawing.Point(243, 27);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(309, 162);
+            this.panel1.Size = new System.Drawing.Size(345, 352);
             this.panel1.TabIndex = 11;
             // 
             // toolStrip1
             // 
             this.toolStrip1.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripButton1,
-            this.toolStripButton2,
-            this.toolStripButton3,
-            this.toolStripButton4,
-            this.toolStripDropDownButton1});
+            this.toolStripDropDownButton1,
+            this.toolStripDropDownButton2});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Padding = new System.Windows.Forms.Padding(0, 0, 2, 0);
@@ -223,44 +219,14 @@ namespace angle_control
             this.toolStrip1.Text = "toolStrip1";
             this.toolStrip1.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.toolStrip1_ItemClicked);
             // 
-            // toolStripButton1
-            // 
-            this.toolStripButton1.Font = new System.Drawing.Font("Microsoft YaHei UI", 9F);
-            this.toolStripButton1.Name = "toolStripButton1";
-            this.toolStripButton1.Size = new System.Drawing.Size(40, 25);
-            this.toolStripButton1.Text = "input";
-            this.toolStripButton1.Click += new System.EventHandler(this.toolStripButton1_Click);
-            // 
-            // toolStripButton2
-            // 
-            this.toolStripButton2.Font = new System.Drawing.Font("Microsoft YaHei UI", 9F);
-            this.toolStripButton2.Name = "toolStripButton2";
-            this.toolStripButton2.Size = new System.Drawing.Size(40, 25);
-            this.toolStripButton2.Text = "chart";
-            this.toolStripButton2.Click += new System.EventHandler(this.toolStripButton2_Click);
-            // 
-            // toolStripButton3
-            // 
-            this.toolStripButton3.Font = new System.Drawing.Font("Microsoft YaHei UI", 9F);
-            this.toolStripButton3.Name = "toolStripButton3";
-            this.toolStripButton3.Size = new System.Drawing.Size(45, 25);
-            this.toolStripButton3.Text = "record";
-            this.toolStripButton3.Click += new System.EventHandler(this.toolStripButton3_Click);
-            // 
-            // toolStripButton4
-            // 
-            this.toolStripButton4.Font = new System.Drawing.Font("Microsoft YaHei UI", 9F);
-            this.toolStripButton4.Name = "toolStripButton4";
-            this.toolStripButton4.Size = new System.Drawing.Size(29, 25);
-            this.toolStripButton4.Text = "stop";
-            this.toolStripButton4.Click += new System.EventHandler(this.toolStripButton4_Click);
-            // 
             // toolStripDropDownButton1
             // 
             this.toolStripDropDownButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.toolStripDropDownButton1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.角度ToolStripMenuItem,
-            this.参考系修改ToolStripMenuItem});
+            this.加速度ToolStripMenuItem1,
+            this.参考系修改ToolStripMenuItem,
+            this.轨迹ToolStripMenuItem1});
             this.toolStripDropDownButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripDropDownButton1.Image")));
             this.toolStripDropDownButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripDropDownButton1.Name = "toolStripDropDownButton1";
@@ -285,11 +251,79 @@ namespace angle_control
             // 
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
+            // button3
+            // 
+            this.button3.BackColor = System.Drawing.Color.SteelBlue;
+            this.button3.Location = new System.Drawing.Point(47, 205);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(131, 22);
+            this.button3.TabIndex = 14;
+            this.button3.Text = "开始";
+            this.button3.UseVisualStyleBackColor = false;
+            this.button3.Click += new System.EventHandler(this.button3_Click);
+            // 
+            // toolStripDropDownButton2
+            // 
+            this.toolStripDropDownButton2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripDropDownButton2.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.数据ToolStripMenuItem,
+            this.角度ToolStripMenuItem1,
+            this.加速度ToolStripMenuItem,
+            this.轨迹ToolStripMenuItem});
+            this.toolStripDropDownButton2.Image = ((System.Drawing.Image)(resources.GetObject("toolStripDropDownButton2.Image")));
+            this.toolStripDropDownButton2.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripDropDownButton2.Name = "toolStripDropDownButton2";
+            this.toolStripDropDownButton2.Size = new System.Drawing.Size(45, 22);
+            this.toolStripDropDownButton2.Text = "视图";
+            // 
+            // 数据ToolStripMenuItem
+            // 
+            this.数据ToolStripMenuItem.Name = "数据ToolStripMenuItem";
+            this.数据ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.数据ToolStripMenuItem.Text = "数据";
+            this.数据ToolStripMenuItem.Click += new System.EventHandler(this.数据ToolStripMenuItem_Click);
+            // 
+            // 角度ToolStripMenuItem1
+            // 
+            this.角度ToolStripMenuItem1.Name = "角度ToolStripMenuItem1";
+            this.角度ToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
+            this.角度ToolStripMenuItem1.Text = "角度";
+            this.角度ToolStripMenuItem1.Click += new System.EventHandler(this.角度ToolStripMenuItem1_Click);
+            // 
+            // 加速度ToolStripMenuItem
+            // 
+            this.加速度ToolStripMenuItem.Name = "加速度ToolStripMenuItem";
+            this.加速度ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.加速度ToolStripMenuItem.Text = "加速度";
+            this.加速度ToolStripMenuItem.Click += new System.EventHandler(this.加速度ToolStripMenuItem_Click);
+            // 
+            // 加速度ToolStripMenuItem1
+            // 
+            this.加速度ToolStripMenuItem1.Name = "加速度ToolStripMenuItem1";
+            this.加速度ToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
+            this.加速度ToolStripMenuItem1.Text = "加速度";
+            this.加速度ToolStripMenuItem1.Click += new System.EventHandler(this.加速度ToolStripMenuItem1_Click);
+            // 
+            // 轨迹ToolStripMenuItem
+            // 
+            this.轨迹ToolStripMenuItem.Name = "轨迹ToolStripMenuItem";
+            this.轨迹ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.轨迹ToolStripMenuItem.Text = "轨迹";
+            this.轨迹ToolStripMenuItem.Click += new System.EventHandler(this.轨迹ToolStripMenuItem_Click);
+            // 
+            // 轨迹ToolStripMenuItem1
+            // 
+            this.轨迹ToolStripMenuItem1.Name = "轨迹ToolStripMenuItem1";
+            this.轨迹ToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
+            this.轨迹ToolStripMenuItem1.Text = "轨迹";
+            this.轨迹ToolStripMenuItem1.Click += new System.EventHandler(this.轨迹ToolStripMenuItem1_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(600, 409);
+            this.Controls.Add(this.button3);
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.button2);
@@ -333,14 +367,18 @@ namespace angle_control
         private System.IO.Ports.SerialPort serialPort1;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.ToolStrip toolStrip1;
-        private System.Windows.Forms.ToolStripTextBox toolStripButton1;
-        private System.Windows.Forms.ToolStripTextBox toolStripButton2;
-        private System.Windows.Forms.ToolStripTextBox toolStripButton3;
-        private System.Windows.Forms.ToolStripTextBox toolStripButton4;
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButton1;
         private System.Windows.Forms.ToolStripMenuItem 角度ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 参考系修改ToolStripMenuItem;
+        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButton2;
+        private System.Windows.Forms.ToolStripMenuItem 数据ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem 角度ToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem 加速度ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem 加速度ToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem 轨迹ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem 轨迹ToolStripMenuItem1;
     }
 }
 
