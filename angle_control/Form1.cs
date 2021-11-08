@@ -510,7 +510,33 @@ namespace angle_control
         private void button3_Click(object sender, EventArgs e)
         {
             textBox2.Text = "50 03 00 3D 00 03 99 86";
+            button2.PerformClick();
         }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            textBox2.Text = "50 06 00 01 00 08 D4 4D ";
+            button2.PerformClick();
+        }
+
+        private void toolStripComboBox1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void 角度ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            textBox2.Text = "50 03 00 3D 00 03 99 86";
+            button2.PerformClick();
+        }
+
+        private void 参考系修改ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            textBox2.Text = "50 06 00 01 00 08 D4 4D ";
+            button2.PerformClick();
+        }
+
+
     }
     }
 

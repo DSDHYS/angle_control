@@ -30,6 +30,7 @@ namespace angle_control
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.serialPort1 = new System.IO.Ports.SerialPort(this.components);
             this.textBox2 = new System.Windows.Forms.TextBox();
             this.button2 = new System.Windows.Forms.Button();
@@ -50,8 +51,10 @@ namespace angle_control
             this.toolStripButton2 = new System.Windows.Forms.ToolStripTextBox();
             this.toolStripButton3 = new System.Windows.Forms.ToolStripTextBox();
             this.toolStripButton4 = new System.Windows.Forms.ToolStripTextBox();
+            this.toolStripDropDownButton1 = new System.Windows.Forms.ToolStripDropDownButton();
+            this.角度ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.参考系修改ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.button3 = new System.Windows.Forms.Button();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -62,15 +65,16 @@ namespace angle_control
             // 
             // textBox2
             // 
-            this.textBox2.Location = new System.Drawing.Point(243, 225);
+            this.textBox2.Location = new System.Drawing.Point(30, 225);
             this.textBox2.Multiline = true;
             this.textBox2.Name = "textBox2";
             this.textBox2.Size = new System.Drawing.Size(282, 134);
             this.textBox2.TabIndex = 1;
+            this.textBox2.TextChanged += new System.EventHandler(this.textBox2_TextChanged);
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(531, 276);
+            this.button2.Location = new System.Drawing.Point(330, 272);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(45, 29);
             this.button2.TabIndex = 2;
@@ -150,7 +154,7 @@ namespace angle_control
             // 
             this.comboBox5.FormattingEnabled = true;
             this.comboBox5.Location = new System.Drawing.Point(97, 130);
-            this.comboBox5.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.comboBox5.Margin = new System.Windows.Forms.Padding(2);
             this.comboBox5.Name = "comboBox5";
             this.comboBox5.Size = new System.Drawing.Size(94, 20);
             this.comboBox5.TabIndex = 4;
@@ -159,7 +163,7 @@ namespace angle_control
             // 
             this.comboBox4.FormattingEnabled = true;
             this.comboBox4.Location = new System.Drawing.Point(97, 107);
-            this.comboBox4.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.comboBox4.Margin = new System.Windows.Forms.Padding(2);
             this.comboBox4.Name = "comboBox4";
             this.comboBox4.Size = new System.Drawing.Size(94, 20);
             this.comboBox4.TabIndex = 3;
@@ -168,7 +172,7 @@ namespace angle_control
             // 
             this.comboBox3.FormattingEnabled = true;
             this.comboBox3.Location = new System.Drawing.Point(97, 84);
-            this.comboBox3.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.comboBox3.Margin = new System.Windows.Forms.Padding(2);
             this.comboBox3.Name = "comboBox3";
             this.comboBox3.Size = new System.Drawing.Size(94, 20);
             this.comboBox3.TabIndex = 2;
@@ -177,7 +181,7 @@ namespace angle_control
             // 
             this.comboBox2.FormattingEnabled = true;
             this.comboBox2.Location = new System.Drawing.Point(97, 61);
-            this.comboBox2.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.comboBox2.Margin = new System.Windows.Forms.Padding(2);
             this.comboBox2.Name = "comboBox2";
             this.comboBox2.Size = new System.Drawing.Size(94, 20);
             this.comboBox2.TabIndex = 1;
@@ -186,7 +190,7 @@ namespace angle_control
             // 
             this.comboBox1.FormattingEnabled = true;
             this.comboBox1.Location = new System.Drawing.Point(97, 37);
-            this.comboBox1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.comboBox1.Margin = new System.Windows.Forms.Padding(2);
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(94, 20);
             this.comboBox1.TabIndex = 0;
@@ -209,7 +213,8 @@ namespace angle_control
             this.toolStripButton1,
             this.toolStripButton2,
             this.toolStripButton3,
-            this.toolStripButton4});
+            this.toolStripButton4,
+            this.toolStripDropDownButton1});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Padding = new System.Windows.Forms.Padding(0, 0, 2, 0);
@@ -250,26 +255,41 @@ namespace angle_control
             this.toolStripButton4.Text = "stop";
             this.toolStripButton4.Click += new System.EventHandler(this.toolStripButton4_Click);
             // 
+            // toolStripDropDownButton1
+            // 
+            this.toolStripDropDownButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripDropDownButton1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.角度ToolStripMenuItem,
+            this.参考系修改ToolStripMenuItem});
+            this.toolStripDropDownButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripDropDownButton1.Image")));
+            this.toolStripDropDownButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripDropDownButton1.Name = "toolStripDropDownButton1";
+            this.toolStripDropDownButton1.Size = new System.Drawing.Size(45, 22);
+            this.toolStripDropDownButton1.Text = "功能";
+            // 
+            // 角度ToolStripMenuItem
+            // 
+            this.角度ToolStripMenuItem.Name = "角度ToolStripMenuItem";
+            this.角度ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.角度ToolStripMenuItem.Text = "角度";
+            this.角度ToolStripMenuItem.Click += new System.EventHandler(this.角度ToolStripMenuItem_Click);
+            // 
+            // 参考系修改ToolStripMenuItem
+            // 
+            this.参考系修改ToolStripMenuItem.Name = "参考系修改ToolStripMenuItem";
+            this.参考系修改ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.参考系修改ToolStripMenuItem.Text = "参考系修改";
+            this.参考系修改ToolStripMenuItem.Click += new System.EventHandler(this.参考系修改ToolStripMenuItem_Click);
+            // 
             // timer1
             // 
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
-            // 
-            // button3
-            // 
-            this.button3.Location = new System.Drawing.Point(63, 246);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(62, 30);
-            this.button3.TabIndex = 13;
-            this.button3.Text = "角度";
-            this.button3.UseVisualStyleBackColor = true;
-            this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(600, 409);
-            this.Controls.Add(this.button3);
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.button2);
@@ -285,7 +305,7 @@ namespace angle_control
             this.Controls.Add(this.comboBox5);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "Form1";
             this.Text = "Form1";
             this.Load += new System.EventHandler(this.Form1_Load);
@@ -318,7 +338,9 @@ namespace angle_control
         private System.Windows.Forms.ToolStripTextBox toolStripButton3;
         private System.Windows.Forms.ToolStripTextBox toolStripButton4;
         private System.Windows.Forms.Timer timer1;
-        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButton1;
+        private System.Windows.Forms.ToolStripMenuItem 角度ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem 参考系修改ToolStripMenuItem;
     }
 }
 
