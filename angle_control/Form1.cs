@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using MathNet.Numerics.LinearAlgebra.Double;
+
 
 namespace angle_control
 {
@@ -26,6 +22,15 @@ namespace angle_control
         double Acceleration_z;
         double[] distance=new double [3];
         double[] velocty =new double[3];
+        double angle_velocity_z ;
+        double angle_velocity_y;
+        double angle_velocity_x;
+        DenseMatrix A = new DenseMatrix(3, 3);
+        DenseMatrix B = new DenseMatrix(3, 1);
+        DenseMatrix C = new DenseMatrix(3,1);
+
+
+
         public Form1()
         {
             InitializeComponent();
@@ -41,7 +46,9 @@ namespace angle_control
             //}
             //string[] baud = { "43000", "56000", "57600", "115200", "128000", "230400", "256000", "460800" };
             //comboBox2.Items.AddRange(baud);
-            
+            A[0, 0] = 1;
+            A[1, 1] = 1;
+            A[2, 2] = 1;
 
             f2.TopLevel = false;
             f3.TopLevel = false;
@@ -245,12 +252,59 @@ namespace angle_control
                     //bs = (short)byteget[4];
                     //bs_2 = ((short)byteget[3]<<8)| byteget[4] ;
 
+                        //A[0, 0] = Math.Cos(angle_velocity_z)*Math.Cos(angle_velocity_y);
+                        //A[0, 1] = Math.Cos(angle_velocity_z) * Math.Sin(angle_velocity_y) * Math.Sin(angle_velocity_x) - Math.Sin(angle_velocity_z) * Math.Cos(angle_velocity_y);
+                        //A[0, 2] = Math.Cos(angle_velocity_z) * Math.Sin(angle_velocity_y) * Math.Cos(angle_velocity_x) + Math.Sin(angle_velocity_z) * Math.Cos(angle_velocity_z);
+                        //A[1, 0] = Math.Sin(angle_velocity_z) * Math.Cos(angle_velocity_y);
+                        //A[1, 1] = Math.Sin(angle_velocity_z) * Math.Sin(angle_velocity_y) * Math.Sin(angle_velocity_x) + Math.Cos(angle_velocity_z) * Math.Cos(angle_velocity_x);
+                        //A[1, 2] = Math.Sin(Az) * Math.Sin(angle_velocity_y) * Math.Cos(angle_velocity_x) - Math.Cos(Az) * Math.Sin(angle_velocity_x);
+                        //A[2, 0] = -Math.Sin(angle_velocity_y);
+                        //A[2, 1] = Math.Cos(angle_velocity_y) * Math.Sin(angle_velocity_x);
+                        //A[2, 2] = Math.Cos(angle_velocity_y) * Math.Cos(angle_velocity_x);
+                        //B[0,0] = Ax;
+                        //B[1,0] = Ay;
+                        //B[2,0] = Az;
+                        //C = A * B;
+
+
+                        //if (f3.chart1.Series[0].Points.Count == 100)
+                        //{
+                        //    f3.chart1.ChartAreas[0].AxisX.Maximum = currentCount;
+                        //    f3.chart1.ChartAreas[0].AxisX.Minimum = currentCount - 50;
+                        //    for (int i = 0; i < 99; i++)
+                        //    {
+                        //        f3.chart1.Series[0].Points[i] = f3.chart1.Series[0].Points[i + 1];
+                        //        f3.chart1.Series[1].Points[i] = f3.chart1.Series[1].Points[i + 1];
+                        //        f3.chart1.Series[2].Points[i] = f3.chart1.Series[2].Points[i + 1];
+                        //    }
+                        //    f3.chart1.Series[0].Points.RemoveAt(0);
+                        //    f3.chart1.Series[0].Points.AddXY(currentCount, C[0,0]);
+                        //    f3.chart1.Series[1].Points.RemoveAt(0);
+                        //    f3.chart1.Series[1].Points.AddXY(currentCount, C[1, 0]);
+                        //    f3.chart1.Series[2].Points.RemoveAt(0);
+                        //    f3.chart1.Series[2].Points.AddXY(currentCount, C[2, 0]);
+
+
+
+                        //}
+                        //else
+                        //{
+                        //    f3.chart1.Series[0].Points.AddXY(currentCount, C[0, 0]);
+                        //    f3.chart1.Series[1].Points.AddXY(currentCount, C[1, 0]);
+                        //    f3.chart1.Series[2].Points.AddXY(currentCount, C[2, 0]);
+                        //}
+
+
                     if (record_strs.Length == 12&& send_insruction== "50 03 00 3D 00 03 99 86")
                     {
 
                         Ax = (short)(((short)byteget[3] << 8) | byteget[4]) / (double)32768 * (double)180;
                         Ay = (short)(((short)byteget[5] << 8) | byteget[6]) / (double)32768 * (double)180;
                         Az = (short)(((short)byteget[7] << 8) | byteget[8]) / (double)32768 * (double)180;
+                        B[0, 0] = Ax;
+                        B[1, 0] = Ay;
+                        B[2, 0] = Az;
+                        C = A * B;
                         if (f3.chart1.Series[0].Points.Count == 100)
                         {
                             f3.chart1.ChartAreas[0].AxisX.Maximum = currentCount;
@@ -262,20 +316,20 @@ namespace angle_control
                                 f3.chart1.Series[2].Points[i] = f3.chart1.Series[2].Points[i + 1];
                             }
                             f3.chart1.Series[0].Points.RemoveAt(0);
-                            f3.chart1.Series[0].Points.AddXY(currentCount, Ax);
+                            f3.chart1.Series[0].Points.AddXY(currentCount, C[0, 0]);
                             f3.chart1.Series[1].Points.RemoveAt(0);
-                            f3.chart1.Series[1].Points.AddXY(currentCount, Ay);
+                            f3.chart1.Series[1].Points.AddXY(currentCount, C[1, 0]);
                             f3.chart1.Series[2].Points.RemoveAt(0);
-                            f3.chart1.Series[2].Points.AddXY(currentCount, Az);
+                            f3.chart1.Series[2].Points.AddXY(currentCount, C[2, 0]);
 
 
 
                         }
                         else
                         {
-                            f3.chart1.Series[0].Points.AddXY(currentCount, Ax); 
-                            f3.chart1.Series[1].Points.AddXY(currentCount, Ay);
-                            f3.chart1.Series[2].Points.AddXY(currentCount, Az);
+                            f3.chart1.Series[0].Points.AddXY(currentCount, C[0, 0]);
+                            f3.chart1.Series[1].Points.AddXY(currentCount, C[1, 0]);
+                            f3.chart1.Series[2].Points.AddXY(currentCount, C[2, 0]);
                         }
                     }
                     if (record_strs.Length == 12 && send_insruction == "50 03 00 34 00 03 49 84")
@@ -519,6 +573,7 @@ namespace angle_control
         private void 角度ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             send_insruction = "50 03 00 3D 00 03 99 86";
+
             //button2.PerformClick();
             Send();
         }
@@ -627,6 +682,24 @@ namespace angle_control
             distance[1] = 0;
             Send();
         }
+
+        private void 参考系修改自制ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            send_insruction = "50 03 00 3D 00 03 99 86";
+            A[0, 0] = Math.Cos(Az) * Math.Cos(Ay);
+            A[0, 1] = Math.Cos(Az) * Math.Sin(Ay) * Math.Sin(Ax) - Math.Sin(Az) * Math.Cos(Ay);
+            A[0, 2] = Math.Cos(Az) * Math.Sin(Ay) * Math.Cos(Ax) + Math.Sin(Az) * Math.Cos(Az);
+            A[1, 0] = Math.Sin(Az) * Math.Cos(Ay);
+            A[1, 1] = Math.Sin(Az) * Math.Sin(Ay) * Math.Sin(Ax) + Math.Cos(Az) * Math.Cos(Ax);
+            A[1, 2] = Math.Sin(Az) * Math.Sin(Ay) * Math.Cos(Ax) - Math.Cos(Az) * Math.Sin(Ax);
+            A[2, 0] = -Math.Sin(Ay);
+            A[2, 1] = Math.Cos(Ay) * Math.Sin(Ax);
+            A[2, 2] = Math.Cos(Ay) * Math.Cos(Ax);
+            Send();
+            
+            
+        }
+
     }
     }
 
