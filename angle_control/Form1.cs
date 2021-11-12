@@ -22,13 +22,12 @@ namespace angle_control
         double Acceleration_z;
         double[] distance=new double [3];
         double[] velocty =new double[3];
-        double angle_velocity_z ;
-        double angle_velocity_y;
-        double angle_velocity_x;
         DenseMatrix A = new DenseMatrix(3, 3);
+        DenseMatrix A_2 = new DenseMatrix(3, 3);
         DenseMatrix B = new DenseMatrix(3, 1);
-        DenseMatrix C = new DenseMatrix(3,1);
-
+        DenseMatrix C_2 = new DenseMatrix(3,3);
+        DenseMatrix C = new DenseMatrix(3, 1);
+        int flag = 0;
 
 
         public Form1()
@@ -304,7 +303,25 @@ namespace angle_control
                         B[0, 0] = Ax;
                         B[1, 0] = Ay;
                         B[2, 0] = Az;
-                        C = A * B;
+                        if( flag==1)
+                        {
+                            A_2[0, 0] = Math.Cos(Az) * Math.Cos(Ay);
+                            A_2[0, 1] = Math.Cos(Az) * Math.Sin(Ay) * Math.Sin(Ax) - Math.Sin(Az) * Math.Cos(Ax);
+                            A_2[0, 2] = Math.Cos(Az) * Math.Sin(Ay) * Math.Cos(Ax) + Math.Sin(Az) * Math.Sin(Ax);
+                            A_2[1, 0] = Math.Sin(Az) * Math.Cos(Ay);
+                            A_2[1, 1] = Math.Sin(Az) * Math.Sin(Ay) * Math.Sin(Ax) + Math.Cos(Az) * Math.Cos(Ax);
+                            A_2[1, 2] = Math.Sin(Az) * Math.Sin(Ay) * Math.Cos(Ax) - Math.Cos(Az) * Math.Sin(Ax);
+                            A_2[2, 0] = -Math.Sin(Ay);
+                            A_2[2, 1] = Math.Cos(Ay) * Math.Sin(Ax);
+                            A_2[2, 2] = Math.Cos(Ay) * Math.Cos(Ax);
+                            A_2.Transpose();
+                            C_2 = (DenseMatrix)(A_2.Transpose() * A);
+                            //C = (DenseMatrix)(A.Transpose() * B);
+                            B[1, 0] = Math.Atan2(-C_2[2, 0], Math.Sqrt(Math.Pow(C_2[0, 0], 2) + Math.Pow(C_2[1, 0], 2)));
+                            B[0, 0] = Math.Atan2(C_2[1, 0] / Math.Cos(B[1, 0]), C_2[0, 0] / Math.Cos(B[1, 0]));
+                            B[2, 0] = Math.Atan2(C_2[2, 1] / Math.Cos(B[1, 0]), C_2[2, 2] / Math.Cos(B[1, 0]));
+                        }
+
                         if (f3.chart1.Series[0].Points.Count == 100)
                         {
                             f3.chart1.ChartAreas[0].AxisX.Maximum = currentCount;
@@ -316,20 +333,20 @@ namespace angle_control
                                 f3.chart1.Series[2].Points[i] = f3.chart1.Series[2].Points[i + 1];
                             }
                             f3.chart1.Series[0].Points.RemoveAt(0);
-                            f3.chart1.Series[0].Points.AddXY(currentCount, C[0, 0]);
+                            f3.chart1.Series[0].Points.AddXY(currentCount, B[0, 0]);
                             f3.chart1.Series[1].Points.RemoveAt(0);
-                            f3.chart1.Series[1].Points.AddXY(currentCount, C[1, 0]);
+                            f3.chart1.Series[1].Points.AddXY(currentCount, B[1, 0]);
                             f3.chart1.Series[2].Points.RemoveAt(0);
-                            f3.chart1.Series[2].Points.AddXY(currentCount, C[2, 0]);
+                            f3.chart1.Series[2].Points.AddXY(currentCount, B[2, 0]);
 
 
 
                         }
                         else
                         {
-                            f3.chart1.Series[0].Points.AddXY(currentCount, C[0, 0]);
-                            f3.chart1.Series[1].Points.AddXY(currentCount, C[1, 0]);
-                            f3.chart1.Series[2].Points.AddXY(currentCount, C[2, 0]);
+                            f3.chart1.Series[0].Points.AddXY(currentCount, B[0, 0]);
+                            f3.chart1.Series[1].Points.AddXY(currentCount, B[1, 0]);
+                            f3.chart1.Series[2].Points.AddXY(currentCount, B[2, 0]);
                         }
                     }
                     if (record_strs.Length == 12 && send_insruction == "50 03 00 34 00 03 49 84")
@@ -573,6 +590,8 @@ namespace angle_control
         private void 角度ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             send_insruction = "50 03 00 3D 00 03 99 86";
+            f3.chart1.ChartAreas[0].AxisY.Maximum = 180;
+            f3.chart1.ChartAreas[0].AxisY.Minimum = -180;
 
             //button2.PerformClick();
             Send();
@@ -686,15 +705,36 @@ namespace angle_control
         private void 参考系修改自制ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             send_insruction = "50 03 00 3D 00 03 99 86";
+            //A[0, 0] = Math.Cos(Az) * Math.Cos(Ay);
+            //A[0, 1] = Math.Cos(Az) * Math.Sin(Ay) * Math.Sin(Ax) - Math.Sin(Az) * Math.Cos(Ay);
+            //A[0, 2] = Math.Cos(Az) * Math.Sin(Ay) * Math.Cos(Ax) + Math.Sin(Az) * Math.Cos(Az);
+            //A[1, 0] = Math.Sin(Az) * Math.Cos(Ay);
+            //A[1, 1] = Math.Sin(Az) * Math.Sin(Ay) * Math.Sin(Ax) + Math.Cos(Az) * Math.Cos(Ax);
+            //A[1, 2] = Math.Sin(Az) * Math.Sin(Ay) * Math.Cos(Ax) - Math.Cos(Az) * Math.Sin(Ax);
+            //A[2, 0] = -Math.Sin(Ay);
+            //A[2, 1] = Math.Cos(Ay) * Math.Sin(Ax);
+            //A[2, 2] = Math.Cos(Ay) * Math.Cos(Ax);
+
+            //A[0, 0] = Math.Cos(Ax) * Math.Cos(Ay);
+            //A[0, 1] = -Math.Cos(Ay)*Math.Sin(Ax);
+            //A[0, 2] = Math.Sin(Ay);
+            //A[1, 0] = Math.Sin(Az) * Math.Sin(Ay) * Math.Cos(Ax) +Math.Cos(Az) * Math.Sin(Ax);
+            //A[1, 1] = -Math.Sin(Az) * Math.Sin(Ay) * Math.Sin(Ax) + Math.Cos(Az) * Math.Cos(Ax);
+            //A[1, 2] = - Math.Cos(Ay) * Math.Sin(Az);
+            //A[2, 0] = -Math.Cos(Az)*Math.Sin(Ay)*Math.Cos(Ax)+Math.Sin(Az)*Math.Sin(Ax);
+            //A[2, 1] = Math.Cos(Az) * Math.Sin(Ax) * Math.Sin(Ay)+Math.Sin(Az)*Math.Cos(Ax);
+            //A[2, 2] = Math.Cos(Ay) * Math.Cos(Az);
+
             A[0, 0] = Math.Cos(Az) * Math.Cos(Ay);
-            A[0, 1] = Math.Cos(Az) * Math.Sin(Ay) * Math.Sin(Ax) - Math.Sin(Az) * Math.Cos(Ay);
-            A[0, 2] = Math.Cos(Az) * Math.Sin(Ay) * Math.Cos(Ax) + Math.Sin(Az) * Math.Cos(Az);
+            A[0, 1] = Math.Cos(Az) * Math.Sin(Ay) * Math.Sin(Ax) - Math.Sin(Az) * Math.Cos(Ax);
+            A[0, 2] = Math.Cos(Az) * Math.Sin(Ay) * Math.Cos(Ax) + Math.Sin(Az) * Math.Sin(Ax);
             A[1, 0] = Math.Sin(Az) * Math.Cos(Ay);
             A[1, 1] = Math.Sin(Az) * Math.Sin(Ay) * Math.Sin(Ax) + Math.Cos(Az) * Math.Cos(Ax);
             A[1, 2] = Math.Sin(Az) * Math.Sin(Ay) * Math.Cos(Ax) - Math.Cos(Az) * Math.Sin(Ax);
             A[2, 0] = -Math.Sin(Ay);
             A[2, 1] = Math.Cos(Ay) * Math.Sin(Ax);
             A[2, 2] = Math.Cos(Ay) * Math.Cos(Ax);
+            flag = 1;
             Send();
             
             
