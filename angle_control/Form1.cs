@@ -314,12 +314,12 @@ namespace angle_control
                             A_2[2, 0] = -Math.Sin(Ay);
                             A_2[2, 1] = Math.Cos(Ay) * Math.Sin(Ax);
                             A_2[2, 2] = Math.Cos(Ay) * Math.Cos(Ax);
-                            A_2.Transpose();
-                            C_2 = (DenseMatrix)(A_2.Transpose() * A);
+                            C_2 = (DenseMatrix)(A*A_2.Transpose());
                             //C = (DenseMatrix)(A.Transpose() * B);
-                            B[1, 0] = Math.Atan2(-C_2[2, 0], Math.Sqrt(Math.Pow(C_2[0, 0], 2) + Math.Pow(C_2[1, 0], 2)));
-                            B[0, 0] = Math.Atan2(C_2[1, 0] / Math.Cos(B[1, 0]), C_2[0, 0] / Math.Cos(B[1, 0]));
-                            B[2, 0] = Math.Atan2(C_2[2, 1] / Math.Cos(B[1, 0]), C_2[2, 2] / Math.Cos(B[1, 0]));
+                            Debug.Write(Math.Atan2(1,1));
+                            B[1, 0] = Math.Atan2(-C_2[2, 0], Math.Sqrt(Math.Pow(C_2[0, 0], 2) + Math.Pow(C_2[1, 0], 2)))*(180/Math.PI);
+                            B[0, 0] = Math.Atan2(C_2[1, 0] / Math.Cos(B[1, 0]), C_2[0, 0] / Math.Cos(B[1, 0])) * (180 / Math.PI);
+                            B[2, 0] = Math.Atan2(C_2[2, 1] / Math.Cos(B[1, 0]), C_2[2, 2] / Math.Cos(B[1, 0])) * (180 / Math.PI);
                         }
 
                         if (f3.chart1.Series[0].Points.Count == 100)
