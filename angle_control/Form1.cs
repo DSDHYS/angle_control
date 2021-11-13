@@ -305,21 +305,22 @@ namespace angle_control
                         B[2, 0] = Az;
                         if( flag==1)
                         {
-                            A_2[0, 0] = Math.Cos(Az) * Math.Cos(Ay);
-                            A_2[0, 1] = Math.Cos(Az) * Math.Sin(Ay) * Math.Sin(Ax) - Math.Sin(Az) * Math.Cos(Ax);
-                            A_2[0, 2] = Math.Cos(Az) * Math.Sin(Ay) * Math.Cos(Ax) + Math.Sin(Az) * Math.Sin(Ax);
-                            A_2[1, 0] = Math.Sin(Az) * Math.Cos(Ay);
-                            A_2[1, 1] = Math.Sin(Az) * Math.Sin(Ay) * Math.Sin(Ax) + Math.Cos(Az) * Math.Cos(Ax);
-                            A_2[1, 2] = Math.Sin(Az) * Math.Sin(Ay) * Math.Cos(Ax) - Math.Cos(Az) * Math.Sin(Ax);
-                            A_2[2, 0] = -Math.Sin(Ay);
-                            A_2[2, 1] = Math.Cos(Ay) * Math.Sin(Ax);
-                            A_2[2, 2] = Math.Cos(Ay) * Math.Cos(Ax);
-                            C_2 = (DenseMatrix)(A*A_2.Transpose());
+                            A_2[0, 0] = Math.Cos(Az * (Math.PI / 180)) * Math.Cos(Ay * (Math.PI / 180));
+                            A_2[0, 1] = Math.Cos(Az * (Math.PI / 180)) * Math.Sin(Ay * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180)) - Math.Sin(Az * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180));
+                            A_2[0, 2] = Math.Cos(Az * (Math.PI / 180)) * Math.Sin(Ay * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180)) + Math.Sin(Az * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180));
+                            A_2[1, 0] = Math.Sin(Az * (Math.PI / 180)) * Math.Cos(Ay * (Math.PI / 180));
+                            A_2[1, 1] = Math.Sin(Az * (Math.PI / 180)) * Math.Sin(Ay * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180)) + Math.Cos(Az * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180));
+                            A_2[1, 2] = Math.Sin(Az * (Math.PI / 180)) * Math.Sin(Ay * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180)) - Math.Cos(Az * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180));
+                            A_2[2, 0] = -Math.Sin(Ay * (Math.PI / 180));
+                            A_2[2, 1] = Math.Cos(Ay * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180));
+                            A_2[2, 2] = Math.Cos(Ay * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180));
+                            C_2 = (DenseMatrix)(A.Transpose() * A_2);
+                            C_2 = (DenseMatrix)(C_2.Transpose());
                             //C = (DenseMatrix)(A.Transpose() * B);
-                            Debug.Write(Math.Atan2(1,1));
-                            B[1, 0] = Math.Atan2(-C_2[2, 0], Math.Sqrt(Math.Pow(C_2[0, 0], 2) + Math.Pow(C_2[1, 0], 2)))*(180/Math.PI);
-                            B[0, 0] = Math.Atan2(C_2[1, 0] / Math.Cos(B[1, 0]), C_2[0, 0] / Math.Cos(B[1, 0])) * (180 / Math.PI);
-                            B[2, 0] = Math.Atan2(C_2[2, 1] / Math.Cos(B[1, 0]), C_2[2, 2] / Math.Cos(B[1, 0])) * (180 / Math.PI);
+
+                            B[1, 0] = Math.Atan2(-C_2[2, 0], Math.Sqrt(Math.Pow(C_2[0, 0], 2) + Math.Pow(C_2[1, 0], 2))) * (180 / Math.PI);
+                            B[2, 0] = Math.Atan2(C_2[1, 0] / Math.Cos(B[1, 0] * (Math.PI / 180)), C_2[0, 0] / Math.Cos(B[1, 0] * (Math.PI / 180))) * (180 / Math.PI);
+                            B[0, 0] = Math.Atan2(C_2[2, 1] / Math.Cos(B[1, 0] * (Math.PI / 180)), C_2[2, 2] / Math.Cos(B[1, 0] * (Math.PI / 180))) * (180 / Math.PI);
                         }
 
                         if (f3.chart1.Series[0].Points.Count == 100)
@@ -351,15 +352,17 @@ namespace angle_control
                     }
                     if (record_strs.Length == 12 && send_insruction == "50 03 00 34 00 03 49 84")
                     {
+                        f3.chart1.ChartAreas[0].AxisY.Maximum = 30;
+                        f3.chart1.ChartAreas[0].AxisY.Minimum = -30;
                         Acceleration_x[1] = (short)(((short)byteget[3] << 8) | byteget[4]) / (double)32768 * (double)(16 * 9.8);
-                        if (Acceleration_x[1]<0.05 && -0.05<Acceleration_x[1] )
+                        if (Acceleration_x[1]<0.2 && -0.2<Acceleration_x[1] )
                         {
                             Acceleration_x[1] = 0;
                         }
                         Debug.WriteLine(Acceleration_x[1]);
                         
                         Acceleration_y[1] = (short)(((short)byteget[5] << 8) | byteget[6]) / (double)32768 * (double)(16 * 9.8);
-                        if (Acceleration_y[1] < 0.05 && -0.05 < Acceleration_y[1])
+                        if (Acceleration_y[1] < 0.2 && -0.2 < Acceleration_y[1])
                         {
                             Acceleration_y[1] = 0;
                         }
@@ -373,7 +376,8 @@ namespace angle_control
                         distance[1] = distance[1] + 0.1 * velocty[1] + 5 * (Acceleration_y[1] - Acceleration_y[0]) * Math.Pow(0.1, 2) + 0.1 * Acceleration_y[0];
                         Acceleration_y[0] = Acceleration_y[1];
 
-                        f4.chart1.Series[0].Points.AddXY(distance[0], distance[1]);
+                       f4.chart1.Series[0].Points.AddXY(currentCount, distance[0]);
+                        f4.chart1.Series[1].Points.AddXY(currentCount, distance[1]);
 
                         if (f3.chart1.Series[0].Points.Count == 100)
                         {
@@ -566,7 +570,7 @@ namespace angle_control
                 角度ToolStripMenuItem.PerformClick();
 
             }
-            if (send_insruction == "50 06 00 01 00 08 D4 4D ")
+            if (send_insruction == "50 03 00 34 00 03 49 84 ")
             {
                 加速度ToolStripMenuItem1.PerformClick(); 
 
@@ -725,15 +729,15 @@ namespace angle_control
             //A[2, 1] = Math.Cos(Az) * Math.Sin(Ax) * Math.Sin(Ay)+Math.Sin(Az)*Math.Cos(Ax);
             //A[2, 2] = Math.Cos(Ay) * Math.Cos(Az);
 
-            A[0, 0] = Math.Cos(Az) * Math.Cos(Ay);
-            A[0, 1] = Math.Cos(Az) * Math.Sin(Ay) * Math.Sin(Ax) - Math.Sin(Az) * Math.Cos(Ax);
-            A[0, 2] = Math.Cos(Az) * Math.Sin(Ay) * Math.Cos(Ax) + Math.Sin(Az) * Math.Sin(Ax);
-            A[1, 0] = Math.Sin(Az) * Math.Cos(Ay);
-            A[1, 1] = Math.Sin(Az) * Math.Sin(Ay) * Math.Sin(Ax) + Math.Cos(Az) * Math.Cos(Ax);
-            A[1, 2] = Math.Sin(Az) * Math.Sin(Ay) * Math.Cos(Ax) - Math.Cos(Az) * Math.Sin(Ax);
-            A[2, 0] = -Math.Sin(Ay);
-            A[2, 1] = Math.Cos(Ay) * Math.Sin(Ax);
-            A[2, 2] = Math.Cos(Ay) * Math.Cos(Ax);
+            A[0, 0] = Math.Cos(Az*(Math.PI/180)) * Math.Cos(Ay * (Math.PI / 180));
+            A[0, 1] = Math.Cos(Az * (Math.PI / 180)) * Math.Sin(Ay * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180)) - Math.Sin(Az * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180));
+            A[0, 2] = Math.Cos(Az * (Math.PI / 180)) * Math.Sin(Ay * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180)) + Math.Sin(Az * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180));
+            A[1, 0] = Math.Sin(Az * (Math.PI / 180)) * Math.Cos(Ay * (Math.PI / 180));
+            A[1, 1] = Math.Sin(Az * (Math.PI / 180)) * Math.Sin(Ay * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180)) + Math.Cos(Az * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180));
+            A[1, 2] = Math.Sin(Az * (Math.PI / 180)) * Math.Sin(Ay * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180)) - Math.Cos(Az * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180));
+            A[2, 0] = -Math.Sin(Ay * (Math.PI / 180));
+            A[2, 1] = Math.Cos(Ay * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180));
+            A[2, 2] = Math.Cos(Ay * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180));
             flag = 1;
             Send();
             
