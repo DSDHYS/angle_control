@@ -354,26 +354,37 @@ namespace angle_control
                     {
                         f3.chart1.ChartAreas[0].AxisY.Maximum = 30;
                         f3.chart1.ChartAreas[0].AxisY.Minimum = -30;
+
                         Acceleration_x[1] = (short)(((short)byteget[3] << 8) | byteget[4]) / (double)32768 * (double)(16 * 9.8);
-                        if (Acceleration_x[1]<0.2 && -0.2<Acceleration_x[1] )
+                        if (Acceleration_x[1] < 0.5 && -0.5 < Acceleration_x[1])
                         {
                             Acceleration_x[1] = 0;
                         }
-                        Debug.WriteLine(Acceleration_x[1]);
-                        
+
+
                         Acceleration_y[1] = (short)(((short)byteget[5] << 8) | byteget[6]) / (double)32768 * (double)(16 * 9.8);
-                        if (Acceleration_y[1] < 0.2 && -0.2 < Acceleration_y[1])
+                        if (Acceleration_y[1] < 0.5 && -0.5 < Acceleration_y[1])
                         {
                             Acceleration_y[1] = 0;
                         }
+                        if (Acceleration_x[0] == 0&& Acceleration_x[1] == 0)
+                        {
+                            velocty[0] = 0;
+                        }
+                        if (Acceleration_y[0] == 0&& Acceleration_y[1] == 0)
+                        {
+                            velocty[1] = 0;
+                        }
                         Acceleration_z = (short)(((short)byteget[7] << 8) | byteget[8]) / (double)32768 * (double)(16 * 9.8)-9.87;
                         
-                        velocty[0] = velocty[0] + (Acceleration_x[1] + Acceleration_x[0]) * 0.1/2;
-                        distance[0] = distance[0] + 0.1 * velocty[0]+5* (Acceleration_x[1] - Acceleration_x[0]) * Math.Pow(0.1,2)+0.1* Acceleration_x[0];
+                        distance[0] = distance[0] + 0.1 * velocty[0]+5/3* (Acceleration_x[1] - Acceleration_x[0]) * Math.Pow(0.1,3)+0.1* Acceleration_x[0]*0.01;
+                        velocty[0] = velocty[0] + (Acceleration_x[1] + Acceleration_x[0]) * 0.1 / 2;
                         Acceleration_x[0] = Acceleration_x[1];
-
+                        Debug.WriteLine("速度{0}", velocty[0]);
+                        Debug.WriteLine("加速度{0}", Acceleration_x[0]);
+                        Debug.WriteLine("路程{0}", distance[0]);
+                        distance[1] = distance[1] + 0.1 * velocty[1] + 5/3 * (Acceleration_y[1] - Acceleration_y[0]) * Math.Pow(0.1, 3) + 0.5 * Acceleration_y[0]*0.01;
                         velocty[1] = velocty[1] + (Acceleration_y[1] + Acceleration_y[0]) * 0.1 / 2;
-                        distance[1] = distance[1] + 0.1 * velocty[1] + 5 * (Acceleration_y[1] - Acceleration_y[0]) * Math.Pow(0.1, 2) + 0.1 * Acceleration_y[0];
                         Acceleration_y[0] = Acceleration_y[1];
 
                        f4.chart1.Series[0].Points.AddXY(currentCount, distance[0]);
