@@ -300,20 +300,22 @@ namespace angle_control
                         Ax = (short)(((short)byteget[3] << 8) | byteget[4]) / (double)32768 * (double)180;
                         Ay = (short)(((short)byteget[5] << 8) | byteget[6]) / (double)32768 * (double)180;
                         Az = (short)(((short)byteget[7] << 8) | byteget[8]) / (double)32768 * (double)180;
+
+                        A_2[0, 0] = Math.Cos(Az * (Math.PI / 180)) * Math.Cos(Ay * (Math.PI / 180));
+                        A_2[0, 1] = Math.Cos(Az * (Math.PI / 180)) * Math.Sin(Ay * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180)) - Math.Sin(Az * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180));
+                        A_2[0, 2] = Math.Cos(Az * (Math.PI / 180)) * Math.Sin(Ay * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180)) + Math.Sin(Az * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180));
+                        A_2[1, 0] = Math.Sin(Az * (Math.PI / 180)) * Math.Cos(Ay * (Math.PI / 180));
+                        A_2[1, 1] = Math.Sin(Az * (Math.PI / 180)) * Math.Sin(Ay * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180)) + Math.Cos(Az * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180));
+                        A_2[1, 2] = Math.Sin(Az * (Math.PI / 180)) * Math.Sin(Ay * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180)) - Math.Cos(Az * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180));
+                        A_2[2, 0] = -Math.Sin(Ay * (Math.PI / 180));
+                        A_2[2, 1] = Math.Cos(Ay * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180));
+                        A_2[2, 2] = Math.Cos(Ay * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180));
                         B[0, 0] = Ax;
                         B[1, 0] = Ay;
                         B[2, 0] = Az;
-                        if( flag==1)
+                        if ( flag==1)
                         {
-                            A_2[0, 0] = Math.Cos(Az * (Math.PI / 180)) * Math.Cos(Ay * (Math.PI / 180));
-                            A_2[0, 1] = Math.Cos(Az * (Math.PI / 180)) * Math.Sin(Ay * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180)) - Math.Sin(Az * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180));
-                            A_2[0, 2] = Math.Cos(Az * (Math.PI / 180)) * Math.Sin(Ay * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180)) + Math.Sin(Az * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180));
-                            A_2[1, 0] = Math.Sin(Az * (Math.PI / 180)) * Math.Cos(Ay * (Math.PI / 180));
-                            A_2[1, 1] = Math.Sin(Az * (Math.PI / 180)) * Math.Sin(Ay * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180)) + Math.Cos(Az * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180));
-                            A_2[1, 2] = Math.Sin(Az * (Math.PI / 180)) * Math.Sin(Ay * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180)) - Math.Cos(Az * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180));
-                            A_2[2, 0] = -Math.Sin(Ay * (Math.PI / 180));
-                            A_2[2, 1] = Math.Cos(Ay * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180));
-                            A_2[2, 2] = Math.Cos(Ay * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180));
+
                             C_2 = (DenseMatrix)(A.Transpose() * A_2);
                             C_2 = (DenseMatrix)(C_2.Transpose());
                             //C = (DenseMatrix)(A.Transpose() * B);

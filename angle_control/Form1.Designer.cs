@@ -53,6 +53,7 @@ namespace angle_control
             this.参考系修改ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.轨迹ToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.参考系修改自制ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.参考系修改停止ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripDropDownButton2 = new System.Windows.Forms.ToolStripDropDownButton();
             this.数据ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.角度ToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
@@ -60,7 +61,6 @@ namespace angle_control
             this.轨迹ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.button3 = new System.Windows.Forms.Button();
-            this.参考系修改停止ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -240,37 +240,42 @@ namespace angle_control
             // 角度ToolStripMenuItem
             // 
             this.角度ToolStripMenuItem.Name = "角度ToolStripMenuItem";
-            this.角度ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.角度ToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             this.角度ToolStripMenuItem.Text = "角度";
             this.角度ToolStripMenuItem.Click += new System.EventHandler(this.角度ToolStripMenuItem_Click);
             // 
             // 加速度ToolStripMenuItem1
             // 
             this.加速度ToolStripMenuItem1.Name = "加速度ToolStripMenuItem1";
-            this.加速度ToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
+            this.加速度ToolStripMenuItem1.Size = new System.Drawing.Size(165, 22);
             this.加速度ToolStripMenuItem1.Text = "加速度";
             this.加速度ToolStripMenuItem1.Click += new System.EventHandler(this.加速度ToolStripMenuItem1_Click);
             // 
             // 参考系修改ToolStripMenuItem
             // 
             this.参考系修改ToolStripMenuItem.Name = "参考系修改ToolStripMenuItem";
-            this.参考系修改ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.参考系修改ToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             this.参考系修改ToolStripMenuItem.Text = "参考系修改";
             this.参考系修改ToolStripMenuItem.Click += new System.EventHandler(this.参考系修改ToolStripMenuItem_Click);
             // 
             // 轨迹ToolStripMenuItem1
             // 
             this.轨迹ToolStripMenuItem1.Name = "轨迹ToolStripMenuItem1";
-            this.轨迹ToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
+            this.轨迹ToolStripMenuItem1.Size = new System.Drawing.Size(165, 22);
             this.轨迹ToolStripMenuItem1.Text = "轨迹";
             this.轨迹ToolStripMenuItem1.Click += new System.EventHandler(this.轨迹ToolStripMenuItem1_Click);
             // 
             // 参考系修改自制ToolStripMenuItem
             // 
             this.参考系修改自制ToolStripMenuItem.Name = "参考系修改自制ToolStripMenuItem";
-            this.参考系修改自制ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.参考系修改自制ToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             this.参考系修改自制ToolStripMenuItem.Text = "参考系修改_自制";
             this.参考系修改自制ToolStripMenuItem.Click += new System.EventHandler(this.参考系修改自制ToolStripMenuItem_Click);
+            // 
+            // 参考系修改停止ToolStripMenuItem
+            // 
+            this.参考系修改停止ToolStripMenuItem.Name = "参考系修改停止ToolStripMenuItem";
+            this.参考系修改停止ToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             // 
             // toolStripDropDownButton2
             // 
@@ -316,6 +321,7 @@ namespace angle_control
             // 
             // timer1
             // 
+            this.timer1.Interval = 40;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
             // button3
