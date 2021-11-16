@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using MathNet.Numerics.LinearAlgebra.Double;
 
 namespace ConsoleApp1
@@ -6,33 +7,64 @@ namespace ConsoleApp1
     class Program
     {
         static void Main(string[] args)
-        {//通过求重力加速度在x轴上的分力，抵消静止时加速的
-            DenseMatrix A = new DenseMatrix(3, 3);
-            DenseMatrix A_2 = new DenseMatrix(3, 3);
-            DenseMatrix B = new DenseMatrix(3, 1);
-            DenseMatrix C_2 = new DenseMatrix(3, 3);
-            double a;
+        {
+            double[] velocty = new double[2];
+            double[] Acceleration_y = new double[2];
+            double time = 0.025;
+            double[] distance = new double[2];
+            distance[0] = 0;
+            velocty[0] = 0;
 
-            double Az = -16.2*Math.PI/180;
-            double Ax = -0.58* Math.PI / 180;
-            double Ay = 0.72 * Math.PI / 180;
-            A[0, 0] = Math.Cos(Az) * Math.Cos(Ay);
-            A[0, 1] = Math.Cos(Az) * Math.Sin(Ay) * Math.Sin(Ax) - Math.Sin(Az) * Math.Cos(Ax);
-            A[0, 2] = Math.Cos(Az) * Math.Sin(Ay) * Math.Cos(Ax) + Math.Sin(Az) * Math.Sin(Ax);
-            A[1, 0] = Math.Sin(Az) * Math.Cos(Ay);
-            A[1, 1] = Math.Sin(Az) * Math.Sin(Ay) * Math.Sin(Ax) + Math.Cos(Az) * Math.Cos(Ax);
-            A[1, 2] = Math.Sin(Az) * Math.Sin(Ay) * Math.Cos(Ax) - Math.Cos(Az) * Math.Sin(Ax);
-            A[2, 0] = -Math.Sin(Ay);
-            A[2, 1] = Math.Cos(Ay) * Math.Sin(Ax);
-            A[2, 2] = Math.Cos(Ay) * Math.Cos(Ax);
-            B[0, 0] = 0;
-            B[1, 0] = 0;
-            B[2, 0] = 1;
-            B = (DenseMatrix)(A.Transpose() * B);
-            Console.WriteLine(A);
-            Console.WriteLine(B);
-            B = B * 9.8;
-            Console.WriteLine(B);
+            Acceleration_y[0] = 0;
+            Acceleration_y[1] =0.025;
+
+            distance[0] = distance[0] + time * velocty[0] + 1 / (6 * time) * (Acceleration_y[1] - Acceleration_y[0]) * Math.Pow(time, 3) + 0.5 * Acceleration_y[0] * Math.Pow(time, 2);
+            velocty[0] = velocty[0] + (Acceleration_y[1] + Acceleration_y[0]) * time / 2;
+
+            Console.WriteLine(distance[0]);
+
+            Acceleration_y[0] = 0.025;
+            Acceleration_y[1] = 0.05;
+            distance[0] = distance[0] + time * velocty[0] + 1 / (6 * time) * (Acceleration_y[1] - Acceleration_y[0]) * Math.Pow(time, 3) + 0.5 * Acceleration_y[0] * Math.Pow(time, 2);
+            velocty[0] = velocty[0] + (Acceleration_y[1] + Acceleration_y[0]) * time / 2;
+
+            Console.WriteLine(distance[0]);
+
+            Acceleration_y[0] = 0.05;
+            Acceleration_y[1] = 0.075;
+            distance[0] = distance[0] + time * velocty[0] + 1 / (6 * time) * (Acceleration_y[1] - Acceleration_y[0]) * Math.Pow(time, 3) + 0.5 * Acceleration_y[0] * Math.Pow(time, 2);
+            velocty[0] = velocty[0] + (Acceleration_y[1] + Acceleration_y[0]) * time / 2;
+
+            Console.WriteLine(distance[0]);
+
+
+            //通过求重力加速度在x轴上的分力，抵消静止时加速的
+            //DenseMatrix A = new DenseMatrix(3, 3);
+            //DenseMatrix A_2 = new DenseMatrix(3, 3);
+            //DenseMatrix B = new DenseMatrix(3, 1);
+            //DenseMatrix C_2 = new DenseMatrix(3, 3);
+            //double a;
+
+            //double Az = -16.4*Math.PI/180;
+            //double Ax = -0.24* Math.PI / 180;
+            //double Ay = 0.33* Math.PI / 180;
+            //A[0, 0] = Math.Cos(Az) * Math.Cos(Ay);
+            //A[0, 1] = Math.Cos(Az) * Math.Sin(Ay) * Math.Sin(Ax) - Math.Sin(Az) * Math.Cos(Ax);
+            //A[0, 2] = Math.Cos(Az) * Math.Sin(Ay) * Math.Cos(Ax) + Math.Sin(Az) * Math.Sin(Ax);
+            //A[1, 0] = Math.Sin(Az) * Math.Cos(Ay);
+            //A[1, 1] = Math.Sin(Az) * Math.Sin(Ay) * Math.Sin(Ax) + Math.Cos(Az) * Math.Cos(Ax);
+            //A[1, 2] = Math.Sin(Az) * Math.Sin(Ay) * Math.Cos(Ax) - Math.Cos(Az) * Math.Sin(Ax);
+            //A[2, 0] = -Math.Sin(Ay);
+            //A[2, 1] = Math.Cos(Ay) * Math.Sin(Ax);
+            //A[2, 2] = Math.Cos(Ay) * Math.Cos(Ax);
+            //B[0, 0] = 0;
+            //B[1, 0] = 0;
+            //B[2, 0] = 1;
+            //B = (DenseMatrix)(A.Transpose() * B);
+            //Console.WriteLine(A);
+            //Console.WriteLine(B);
+            //B = B * 9.8;
+            //Console.WriteLine(B);
 
 
             /////////////////////////////////////////////////////////////////////////////////
