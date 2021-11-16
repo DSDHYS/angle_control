@@ -13,9 +13,9 @@ namespace ConsoleApp1
             DenseMatrix C_2 = new DenseMatrix(3, 3);
             double a;
 
-            double Az = 39.3*Math.PI/180;
-            double Ax = -0.59* Math.PI / 180;
-            double Ay = -0.15 * Math.PI / 180;
+            double Az = -16.2*Math.PI/180;
+            double Ax = -0.58* Math.PI / 180;
+            double Ay = 0.72 * Math.PI / 180;
             A[0, 0] = Math.Cos(Az) * Math.Cos(Ay);
             A[0, 1] = Math.Cos(Az) * Math.Sin(Ay) * Math.Sin(Ax) - Math.Sin(Az) * Math.Cos(Ax);
             A[0, 2] = Math.Cos(Az) * Math.Sin(Ay) * Math.Cos(Ax) + Math.Sin(Az) * Math.Sin(Ax);
@@ -31,9 +31,11 @@ namespace ConsoleApp1
             B = (DenseMatrix)(A.Transpose() * B);
             Console.WriteLine(A);
             Console.WriteLine(B);
-            a = Math.Sin(B[0, 0]);
-            Console.WriteLine(a);
- /////////////////////////////////////////////////////////////////////////////////
+            B = B * 9.8;
+            Console.WriteLine(B);
+
+
+            /////////////////////////////////////////////////////////////////////////////////
             //DenseMatrix A = new DenseMatrix(3, 3);
             //DenseMatrix A_2 = new DenseMatrix(3, 3);
             //DenseMatrix B = new DenseMatrix(3, 1);

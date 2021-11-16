@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 using MathNet.Numerics.LinearAlgebra.Double;
 
@@ -14,27 +15,29 @@ namespace angle_control
         private long receive_count = 0;
         public string record;
         Form2 f2 = new Form2();
-        Form4 f4 = new Form4();
-        public string send_insruction="";//to receive the instuction
         Form3 f3 = new Form3();
-        double[] Acceleration_x =new double[2];
+        Form4 f4 = new Form4();
+        Form3 f5 = new Form3();
+        public string send_instruction = "";//to receive the instuction
+        double[] Acceleration_x = new double[2];
         double[] Acceleration_y = new double[2];
         double Acceleration_z;
-        double[] distance=new double [3];
-        double[] velocty =new double[3];
+        double[] distance = new double[3];
+        double[] velocty = new double[3];
         DenseMatrix A = new DenseMatrix(3, 3);
         DenseMatrix A_2 = new DenseMatrix(3, 3);
         DenseMatrix B = new DenseMatrix(3, 1);
-        DenseMatrix C_2 = new DenseMatrix(3,3);
+        DenseMatrix C_2 = new DenseMatrix(3, 3);
         DenseMatrix C = new DenseMatrix(3, 1);
         int flag = 0;
+        int send_get = 0;
 
 
         public Form1()
         {
             InitializeComponent();
-            
-        //serialPort1.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(serialPort1_DataReceived);
+
+            //serialPort1.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(serialPort1_DataReceived);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -52,18 +55,20 @@ namespace angle_control
             f2.TopLevel = false;
             f3.TopLevel = false;
             f4.TopLevel = false;
-            //f2.Parent = panel1;
+            f5.TopLevel = false;
+
             this.panel1.Controls.Add(f2);
-            this.panel1.Controls.Add(f3);
-            this.panel1.Controls.Add(f4);
-            f3.Visible = false;
+            //this.panel1.Controls.Add(f3);
+            //this.panel1.Controls.Add(f4);
+            //this.panel1.Controls.Add(f5);
+            //f3.Visible = false;
             f2.FormBorderStyle = FormBorderStyle.None;
             f2.Dock = DockStyle.Fill;
             f2.Show();
             comboBox1.Items.AddRange(System.IO.Ports.SerialPort.GetPortNames());
             comboBox2.Text = Convert.ToString(serialPort1.BaudRate);
             comboBox3.Text = Convert.ToString(serialPort1.DataBits);
-            comboBox4.Text= Convert.ToString(serialPort1.Parity);
+            comboBox4.Text = Convert.ToString(serialPort1.Parity);
             comboBox5.Text = Convert.ToString(serialPort1.StopBits);
 
             //comboBox3.Text = "8";
@@ -108,7 +113,7 @@ namespace angle_control
                     comboBox4.Enabled = true;
                     comboBox5.Enabled = true;
                     f2.textBox1.Text = "";
-                    send_insruction = "";
+                    send_instruction = "";
 
                 }
                 else
@@ -117,7 +122,7 @@ namespace angle_control
                     comboBox2.Enabled = false;
                     comboBox3.Enabled = false;
                     comboBox4.Enabled = false;
-                    comboBox5.Enabled = false;  
+                    comboBox5.Enabled = false;
                     serialPort1.PortName = comboBox1.Text;
                     serialPort1.BaudRate = Convert.ToInt32(comboBox2.Text);
                     serialPort1.DataBits = Convert.ToInt16(comboBox3.Text);
@@ -146,7 +151,7 @@ namespace angle_control
                 button1.BackColor = Color.SteelBlue;
 
             }
-            }
+        }
 
 
 
@@ -161,7 +166,7 @@ namespace angle_control
                     f2.textBox1.AppendText("\r\n");
                     byte[] bytesend = new byte[8];
                     byte[] bytesend_6 = new byte[6];
-                    string[] input = send_insruction.Split();
+                    string[] input = send_instruction.Split();
                     if (input.Length == 8)
                     {
                         for (int i = 0; i < 8; i++)
@@ -187,8 +192,8 @@ namespace angle_control
                         }
                     }
 
-                    send_insruction = BitConverter.ToString(bytesend);
-                    send_insruction = send_insruction.Replace('-', ' ');
+                    send_instruction = BitConverter.ToString(bytesend);
+                    send_instruction = send_instruction.Replace('-', ' ');
                     //串口处于开启状态，将发送区文本发送
                     serialPort1.Write(bytesend, 0, bytesend.Length);
                 }
@@ -219,7 +224,7 @@ namespace angle_control
 
             int num = serialPort1.BytesToRead;      //获取接收缓冲区中的字节数
             byte[] received_buf = new byte[num];    //声明一个大小为num的字节数据用于存放读出的byte型数据
-            
+
             receive_count += num;                   //接收字节计数变量增加nun
             serialPort1.Read(received_buf, 0, num);   //读取接收缓冲区中num个字节到byte数组中
                                                       //接第二步中的代码
@@ -227,200 +232,167 @@ namespace angle_control
                             //遍历数组进行字符串转化及拼接
             foreach (byte b in received_buf)
             {
-                sb.Append(b.ToString("X2") +' ');
+                sb.Append(b.ToString("X2") + ' ');
             }
+
+
             try
             {
                 //因为要访问UI资源，所以需要使用invoke方式同步ui
                 Invoke((EventHandler)(delegate
                 {
                     f2.textBox1.AppendText(sb.ToString());
-                    record+=sb.ToString();
+                    record += sb.ToString();
                     string[] record_strs = record.Split();
                     byte[] byteget = new byte[record_strs.Length - 1];
-                    for (int i = 0; i < record_strs.Length - 1; i++)
+                        //if (record_strs.Length == 12)
+
+                        for (int i = 0; i < record_strs.Length - 1; i++)
                     {
                         byteget[i] = Convert.ToByte(record_strs[i], 16);
                     }
 
-                    //(short)record[3];
-                    //short bs=(short)byteget[3];
-                    //int bs_2 = (short)byteget[3]<<8;
-
-                    //byte by = byteget[3];
-                    //bs = (short)byteget[4];
-                    //bs_2 = ((short)byteget[3]<<8)| byteget[4] ;
-
-                        //A[0, 0] = Math.Cos(angle_velocity_z)*Math.Cos(angle_velocity_y);
-                        //A[0, 1] = Math.Cos(angle_velocity_z) * Math.Sin(angle_velocity_y) * Math.Sin(angle_velocity_x) - Math.Sin(angle_velocity_z) * Math.Cos(angle_velocity_y);
-                        //A[0, 2] = Math.Cos(angle_velocity_z) * Math.Sin(angle_velocity_y) * Math.Cos(angle_velocity_x) + Math.Sin(angle_velocity_z) * Math.Cos(angle_velocity_z);
-                        //A[1, 0] = Math.Sin(angle_velocity_z) * Math.Cos(angle_velocity_y);
-                        //A[1, 1] = Math.Sin(angle_velocity_z) * Math.Sin(angle_velocity_y) * Math.Sin(angle_velocity_x) + Math.Cos(angle_velocity_z) * Math.Cos(angle_velocity_x);
-                        //A[1, 2] = Math.Sin(Az) * Math.Sin(angle_velocity_y) * Math.Cos(angle_velocity_x) - Math.Cos(Az) * Math.Sin(angle_velocity_x);
-                        //A[2, 0] = -Math.Sin(angle_velocity_y);
-                        //A[2, 1] = Math.Cos(angle_velocity_y) * Math.Sin(angle_velocity_x);
-                        //A[2, 2] = Math.Cos(angle_velocity_y) * Math.Cos(angle_velocity_x);
-                        //B[0,0] = Ax;
-                        //B[1,0] = Ay;
-                        //B[2,0] = Az;
-                        //C = A * B;
-
-
-                        //if (f3.chart1.Series[0].Points.Count == 100)
-                        //{
-                        //    f3.chart1.ChartAreas[0].AxisX.Maximum = currentCount;
-                        //    f3.chart1.ChartAreas[0].AxisX.Minimum = currentCount - 50;
-                        //    for (int i = 0; i < 99; i++)
-                        //    {
-                        //        f3.chart1.Series[0].Points[i] = f3.chart1.Series[0].Points[i + 1];
-                        //        f3.chart1.Series[1].Points[i] = f3.chart1.Series[1].Points[i + 1];
-                        //        f3.chart1.Series[2].Points[i] = f3.chart1.Series[2].Points[i + 1];
-                        //    }
-                        //    f3.chart1.Series[0].Points.RemoveAt(0);
-                        //    f3.chart1.Series[0].Points.AddXY(currentCount, C[0,0]);
-                        //    f3.chart1.Series[1].Points.RemoveAt(0);
-                        //    f3.chart1.Series[1].Points.AddXY(currentCount, C[1, 0]);
-                        //    f3.chart1.Series[2].Points.RemoveAt(0);
-                        //    f3.chart1.Series[2].Points.AddXY(currentCount, C[2, 0]);
-
-
-
-                        //}
-                        //else
-                        //{
-                        //    f3.chart1.Series[0].Points.AddXY(currentCount, C[0, 0]);
-                        //    f3.chart1.Series[1].Points.AddXY(currentCount, C[1, 0]);
-                        //    f3.chart1.Series[2].Points.AddXY(currentCount, C[2, 0]);
-                        //}
-
-
-                    if (record_strs.Length == 12&& send_insruction== "50 03 00 3D 00 03 99 86")
+                    if (record_strs.Length == 12 && Crc.IsCrcOK(byteget))
                     {
-
-                        Ax = (short)(((short)byteget[3] << 8) | byteget[4]) / (double)32768 * (double)180;
-                        Ay = (short)(((short)byteget[5] << 8) | byteget[6]) / (double)32768 * (double)180;
-                        Az = (short)(((short)byteget[7] << 8) | byteget[8]) / (double)32768 * (double)180;
-
-                        A_2[0, 0] = Math.Cos(Az * (Math.PI / 180)) * Math.Cos(Ay * (Math.PI / 180));
-                        A_2[0, 1] = Math.Cos(Az * (Math.PI / 180)) * Math.Sin(Ay * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180)) - Math.Sin(Az * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180));
-                        A_2[0, 2] = Math.Cos(Az * (Math.PI / 180)) * Math.Sin(Ay * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180)) + Math.Sin(Az * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180));
-                        A_2[1, 0] = Math.Sin(Az * (Math.PI / 180)) * Math.Cos(Ay * (Math.PI / 180));
-                        A_2[1, 1] = Math.Sin(Az * (Math.PI / 180)) * Math.Sin(Ay * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180)) + Math.Cos(Az * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180));
-                        A_2[1, 2] = Math.Sin(Az * (Math.PI / 180)) * Math.Sin(Ay * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180)) - Math.Cos(Az * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180));
-                        A_2[2, 0] = -Math.Sin(Ay * (Math.PI / 180));
-                        A_2[2, 1] = Math.Cos(Ay * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180));
-                        A_2[2, 2] = Math.Cos(Ay * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180));
-                        B[0, 0] = Ax;
-                        B[1, 0] = Ay;
-                        B[2, 0] = Az;
-                        if ( flag==1)
+                        if (send_instruction == "50 03 00 3D 00 03 99 86")
                         {
+                            send_get = 1;
 
-                            C_2 = (DenseMatrix)(A.Transpose() * A_2);
-                            C_2 = (DenseMatrix)(C_2.Transpose());
-                            //C = (DenseMatrix)(A.Transpose() * B);
+                            Debug.WriteLine("angle get");
+                            Ax = (short)(((short)byteget[3] << 8) | byteget[4]) / (double)32768 * (double)180;
+                            Ay = (short)(((short)byteget[5] << 8) | byteget[6]) / (double)32768 * (double)180;
+                            Az = (short)(((short)byteget[7] << 8) | byteget[8]) / (double)32768 * (double)180;
 
-                            B[1, 0] = Math.Atan2(-C_2[2, 0], Math.Sqrt(Math.Pow(C_2[0, 0], 2) + Math.Pow(C_2[1, 0], 2))) * (180 / Math.PI);
-                            B[2, 0] = Math.Atan2(C_2[1, 0] / Math.Cos(B[1, 0] * (Math.PI / 180)), C_2[0, 0] / Math.Cos(B[1, 0] * (Math.PI / 180))) * (180 / Math.PI);
-                            B[0, 0] = Math.Atan2(C_2[2, 1] / Math.Cos(B[1, 0] * (Math.PI / 180)), C_2[2, 2] / Math.Cos(B[1, 0] * (Math.PI / 180))) * (180 / Math.PI);
-                        }
 
-                        if (f3.chart1.Series[0].Points.Count == 100)
-                        {
-                            f3.chart1.ChartAreas[0].AxisX.Maximum = currentCount;
-                            f3.chart1.ChartAreas[0].AxisX.Minimum = currentCount - 50;
-                            for (int i = 0; i < 99; i++)
+                            //A_2[0, 0] = Math.Cos(Az * (Math.PI / 180)) * Math.Cos(Ay * (Math.PI / 180));
+                            //A_2[0, 1] = Math.Cos(Az * (Math.PI / 180)) * Math.Sin(Ay * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180)) - Math.Sin(Az * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180));
+                            //A_2[0, 2] = Math.Cos(Az * (Math.PI / 180)) * Math.Sin(Ay * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180)) + Math.Sin(Az * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180));
+                            //A_2[1, 0] = Math.Sin(Az * (Math.PI / 180)) * Math.Cos(Ay * (Math.PI / 180));
+                            //A_2[1, 1] = Math.Sin(Az * (Math.PI / 180)) * Math.Sin(Ay * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180)) + Math.Cos(Az * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180));
+                            //A_2[1, 2] = Math.Sin(Az * (Math.PI / 180)) * Math.Sin(Ay * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180)) - Math.Cos(Az * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180));
+                            //A_2[2, 0] = -Math.Sin(Ay * (Math.PI / 180));
+                            //A_2[2, 1] = Math.Cos(Ay * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180));
+                            //A_2[2, 2] = Math.Cos(Ay * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180));
+                            A_2 = angle_ola_zyx(Ax, Ay, Az);
+
+                            B[0, 0] = Ax;
+                            B[1, 0] = Ay;
+                            B[2, 0] = Az;
+                            if (flag == 1)
                             {
-                                f3.chart1.Series[0].Points[i] = f3.chart1.Series[0].Points[i + 1];
-                                f3.chart1.Series[1].Points[i] = f3.chart1.Series[1].Points[i + 1];
-                                f3.chart1.Series[2].Points[i] = f3.chart1.Series[2].Points[i + 1];
+
+                                C_2 = (DenseMatrix)(A.Transpose() * A_2);
+                                C_2 = (DenseMatrix)(C_2.Transpose());
+                                    //C = (DenseMatrix)(A.Transpose() * B);
+
+                                    B[1, 0] = Math.Atan2(-C_2[2, 0], Math.Sqrt(Math.Pow(C_2[0, 0], 2) + Math.Pow(C_2[1, 0], 2))) * (180 / Math.PI);
+                                B[2, 0] = Math.Atan2(C_2[1, 0] / Math.Cos(B[1, 0] * (Math.PI / 180)), C_2[0, 0] / Math.Cos(B[1, 0] * (Math.PI / 180))) * (180 / Math.PI);
+                                B[0, 0] = Math.Atan2(C_2[2, 1] / Math.Cos(B[1, 0] * (Math.PI / 180)), C_2[2, 2] / Math.Cos(B[1, 0] * (Math.PI / 180))) * (180 / Math.PI);
                             }
-                            f3.chart1.Series[0].Points.RemoveAt(0);
-                            f3.chart1.Series[0].Points.AddXY(currentCount, B[0, 0]);
-                            f3.chart1.Series[1].Points.RemoveAt(0);
-                            f3.chart1.Series[1].Points.AddXY(currentCount, B[1, 0]);
-                            f3.chart1.Series[2].Points.RemoveAt(0);
-                            f3.chart1.Series[2].Points.AddXY(currentCount, B[2, 0]);
+
+                            if (f5.chart1.Series[0].Points.Count == 100)
+                            {
+                                f5.chart1.ChartAreas[0].AxisX.Maximum = currentCount;
+                                f5.chart1.ChartAreas[0].AxisX.Minimum = currentCount - 50;
+                                for (int i = 0; i < 99; i++)
+                                {
+                                    f5.chart1.Series[0].Points[i] = f5.chart1.Series[0].Points[i + 1];
+                                    f5.chart1.Series[1].Points[i] = f5.chart1.Series[1].Points[i + 1];
+                                    f5.chart1.Series[2].Points[i] = f5.chart1.Series[2].Points[i + 1];
+                                }
+                                f5.chart1.Series[0].Points.RemoveAt(0);
+                                f5.chart1.Series[0].Points.AddXY(currentCount, B[0, 0]);
+                                f5.chart1.Series[1].Points.RemoveAt(0);
+                                f5.chart1.Series[1].Points.AddXY(currentCount, B[1, 0]);
+                                f5.chart1.Series[2].Points.RemoveAt(0);
+                                f5.chart1.Series[2].Points.AddXY(currentCount, B[2, 0]);
 
 
 
+                            }
+                            else
+                            {
+                                f5.chart1.Series[0].Points.AddXY(currentCount, B[0, 0]);
+                                f5.chart1.Series[1].Points.AddXY(currentCount, B[1, 0]);
+                                f5.chart1.Series[2].Points.AddXY(currentCount, B[2, 0]);
+                            }
                         }
-                        else
+                        if (send_instruction == "50 03 00 34 00 03 49 84")
                         {
-                            f3.chart1.Series[0].Points.AddXY(currentCount, B[0, 0]);
-                            f3.chart1.Series[1].Points.AddXY(currentCount, B[1, 0]);
-                            f3.chart1.Series[2].Points.AddXY(currentCount, B[2, 0]);
+                            send_get = 0;
+
+                            Debug.WriteLine("accelerate get");
+                            f3.chart1.ChartAreas[0].AxisY.Maximum = 30;
+                            f3.chart1.ChartAreas[0].AxisY.Minimum = -30;
+
+                            //Acceleration_x[1] = (short)(((short)byteget[3] << 8) | byteget[4]) / (double)32768 * (double)(16 * 9.8);
+                            //Debug.WriteLine(Acceleration_x[1]);
+                            Acceleration_x[1] = (short)(((short)byteget[3] << 8) | byteget[4]) / (double)32768 * (double)(16 * 9.8) - delete_grativy(Ax, Ay, Az)[0, 0];
+                            //Debug.WriteLine(delete_grativy(Ax, Ay, Az)[0, 0]);
+                           // Debug.WriteLine(Acceleration_x[1]);
+                            Acceleration_y[1] = (short)(((short)byteget[5] << 8) | byteget[6]) / (double)32768 * (double)(16 * 9.8) - delete_grativy(Ax, Ay, Az)[1, 0];
+                            Debug.WriteLine(Acceleration_y[1]);
+                            Acceleration_z = (short)(((short)byteget[7] << 8) | byteget[8]) / (double)32768 * (double)(16 * 9.8) - delete_grativy(Ax, Ay, Az)[2, 0];
+
+                            if (Acceleration_x[1]<0.01&& Acceleration_x[1] >- 0.01)
+                            {
+                                Acceleration_x[1] = 0;
+                            }
+                            if (Acceleration_y[1] < 0.01 && Acceleration_y[1] > -0.01)
+                            {
+                                Acceleration_y[1] = 0;
+                            }
+                            if (Acceleration_z < 0.01 && Acceleration_z > -0.01)
+                            {
+                                Acceleration_z = 0;
+                            }
+
+                            distance[0] = distance[0] + 0.1 * velocty[0] + 5 / 3 * (Acceleration_x[1] - Acceleration_x[0]) * Math.Pow(0.1, 3) + 0.1 * Acceleration_x[0] * 0.01;
+                            velocty[0] = velocty[0] + (Acceleration_x[1] + Acceleration_x[0]) * 0.1 / 2;
+                            Acceleration_x[0] = Acceleration_x[1];
+                                //Debug.WriteLine("速度{0}", velocty[0]);
+                                //Debug.WriteLine("加速度{0}", Acceleration_x[0]);
+                                //Debug.WriteLine("路程{0}", distance[0]);
+                                distance[1] = distance[1] + 0.1 * velocty[1] + 5 / 3 * (Acceleration_y[1] - Acceleration_y[0]) * Math.Pow(0.1, 3) + 0.5 * Acceleration_y[0] * 0.01;
+                            velocty[1] = velocty[1] + (Acceleration_y[1] + Acceleration_y[0]) * 0.1 / 2;
+                            Acceleration_y[0] = Acceleration_y[1];
+
+                            f4.chart1.Series[0].Points.AddXY(currentCount, distance[0]);
+                            f4.chart1.Series[1].Points.AddXY(currentCount, distance[1]);
+
+                            if (f3.chart1.Series[0].Points.Count == 100)
+                            {
+                                f3.chart1.ChartAreas[0].AxisX.Maximum = currentCount;
+                                f3.chart1.ChartAreas[0].AxisX.Minimum = currentCount - 50;
+
+                                for (int i = 0; i < 99; i++)
+                                {
+                                    f3.chart1.Series[0].Points[i] = f3.chart1.Series[0].Points[i + 1];
+                                    f3.chart1.Series[1].Points[i] = f3.chart1.Series[1].Points[i + 1];
+                                    f3.chart1.Series[2].Points[i] = f3.chart1.Series[2].Points[i + 1];
+
+                                }
+                                f3.chart1.Series[0].Points.RemoveAt(0);
+                                f3.chart1.Series[0].Points.AddXY(currentCount, Acceleration_x[1]);
+                                f3.chart1.Series[1].Points.RemoveAt(0);
+                                f3.chart1.Series[1].Points.AddXY(currentCount, Acceleration_y[1]);
+                                f3.chart1.Series[2].Points.RemoveAt(0);
+                                f3.chart1.Series[2].Points.AddXY(currentCount, Acceleration_z);
+
+
+
+                            }
+                            else
+                            {
+                                f3.chart1.Series[0].Points.AddXY(currentCount, Acceleration_x[1]);
+                                f3.chart1.Series[1].Points.AddXY(currentCount, Acceleration_y[1]);
+                                f3.chart1.Series[2].Points.AddXY(currentCount, Acceleration_z);
+                            }
                         }
                     }
-                    if (record_strs.Length == 12 && send_insruction == "50 03 00 34 00 03 49 84")
-                    {
-                        f3.chart1.ChartAreas[0].AxisY.Maximum = 30;
-                        f3.chart1.ChartAreas[0].AxisY.Minimum = -30;
-
-                        Acceleration_x[1] = (short)(((short)byteget[3] << 8) | byteget[4]) / (double)32768 * (double)(16 * 9.8);
-                        if (Acceleration_x[1] < 0.5 && -0.5 < Acceleration_x[1])
-                        {
-                            Acceleration_x[1] = 0;
-                        }
-
-
-                        Acceleration_y[1] = (short)(((short)byteget[5] << 8) | byteget[6]) / (double)32768 * (double)(16 * 9.8);
-                        if (Acceleration_y[1] < 0.5 && -0.5 < Acceleration_y[1])
-                        {
-                            Acceleration_y[1] = 0;
-                        }
-                        if (Acceleration_x[0] == 0&& Acceleration_x[1] == 0)
-                        {
-                            velocty[0] = 0;
-                        }
-                        if (Acceleration_y[0] == 0&& Acceleration_y[1] == 0)
-                        {
-                            velocty[1] = 0;
-                        }
-                        Acceleration_z = (short)(((short)byteget[7] << 8) | byteget[8]) / (double)32768 * (double)(16 * 9.8)-9.87;
-                        
-                        distance[0] = distance[0] + 0.1 * velocty[0]+5/3* (Acceleration_x[1] - Acceleration_x[0]) * Math.Pow(0.1,3)+0.1* Acceleration_x[0]*0.01;
-                        velocty[0] = velocty[0] + (Acceleration_x[1] + Acceleration_x[0]) * 0.1 / 2;
-                        Acceleration_x[0] = Acceleration_x[1];
-                        Debug.WriteLine("速度{0}", velocty[0]);
-                        Debug.WriteLine("加速度{0}", Acceleration_x[0]);
-                        Debug.WriteLine("路程{0}", distance[0]);
-                        distance[1] = distance[1] + 0.1 * velocty[1] + 5/3 * (Acceleration_y[1] - Acceleration_y[0]) * Math.Pow(0.1, 3) + 0.5 * Acceleration_y[0]*0.01;
-                        velocty[1] = velocty[1] + (Acceleration_y[1] + Acceleration_y[0]) * 0.1 / 2;
-                        Acceleration_y[0] = Acceleration_y[1];
-
-                       f4.chart1.Series[0].Points.AddXY(currentCount, distance[0]);
-                        f4.chart1.Series[1].Points.AddXY(currentCount, distance[1]);
-
-                        if (f3.chart1.Series[0].Points.Count == 100)
-                        {
-                            f3.chart1.ChartAreas[0].AxisX.Maximum = currentCount;
-                            f3.chart1.ChartAreas[0].AxisX.Minimum = currentCount - 50;
-
-                            for (int i = 0; i < 99; i++)
-                            {
-                                f3.chart1.Series[0].Points[i] = f3.chart1.Series[0].Points[i + 1];
-                                f3.chart1.Series[1].Points[i] = f3.chart1.Series[1].Points[i + 1];
-                                f3.chart1.Series[2].Points[i] = f3.chart1.Series[2].Points[i + 1];
-                                
-                            }
-                            f3.chart1.Series[0].Points.RemoveAt(0);
-                            f3.chart1.Series[0].Points.AddXY(currentCount, Acceleration_x[1]);
-                            f3.chart1.Series[1].Points.RemoveAt(0);
-                            f3.chart1.Series[1].Points.AddXY(currentCount, Acceleration_y[1]);
-                            f3.chart1.Series[2].Points.RemoveAt(0);
-                            f3.chart1.Series[2].Points.AddXY(currentCount, Acceleration_z);
 
 
 
-                        }
-                        else
-                        {
-                            f3.chart1.Series[0].Points.AddXY(currentCount, Acceleration_x[1]);
-                            f3.chart1.Series[1].Points.AddXY(currentCount, Acceleration_y[1]);
-                            f3.chart1.Series[2].Points.AddXY(currentCount, Acceleration_z);
-                        }
-                    }
                 }
                   )
                 );
@@ -429,11 +401,13 @@ namespace angle_control
             {
 
             }
+
+
         }
 
         private void panel1_Paint(object sender, PaintEventArgs e)
         {
-            
+
         }
         public class Crc
         {
@@ -547,9 +521,9 @@ namespace angle_control
 
         private void toolStripButton3_Click(object sender, EventArgs e)
         {
-            
 
-            if (this.timer1.Enabled==false)
+
+            if (this.timer1.Enabled == false)
             {
                 this.timer1.Enabled = true;
                 timer1.Start();
@@ -567,27 +541,45 @@ namespace angle_control
         {
             timer1.Stop();
         }
-        public int currentCount=0;
+        public int currentCount = 0;
         public double Ax;
         public double Ay;
         public double Az;
         public void timer1_Tick(object sender, EventArgs e)
         {
 
-                currentCount += 1;
+            currentCount += 1;
 
+            if (send_get == 0)
+            {
+                send_instruction = "50 03 00 3D 00 03 99 86";
                 Send();
+                Debug.WriteLine("angel");
+            }
+
+
+
+            if (send_get == 1)
+            {
+                send_instruction = "50 03 00 34 00 03 49 84 ";
+                Send();
+                Debug.WriteLine("accelerate");
+
+            }
+
+
+
             //    button2.PerformClick();
-            if (send_insruction == "50 03 00 3D 00 03 99 86")
-            {
-                角度ToolStripMenuItem.PerformClick();
+            //if (send_instruction == "50 03 00 3D 00 03 99 86")
+            //{
+            //    角度ToolStripMenuItem.PerformClick();
 
-            }
-            if (send_insruction == "50 03 00 34 00 03 49 84 ")
-            {
-                加速度ToolStripMenuItem1.PerformClick(); 
+            //}
+            //if (send_instruction == "50 03 00 34 00 03 49 84 ")
+            //{
+            //    加速度ToolStripMenuItem1.PerformClick(); 
 
-            }
+            //}
 
             //(short)record[3];
 
@@ -606,7 +598,7 @@ namespace angle_control
 
         private void 角度ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            send_insruction = "50 03 00 3D 00 03 99 86";
+            send_instruction = "50 03 00 3D 00 03 99 86";
             f3.chart1.ChartAreas[0].AxisY.Maximum = 180;
             f3.chart1.ChartAreas[0].AxisY.Minimum = -180;
 
@@ -616,38 +608,34 @@ namespace angle_control
 
         private void 参考系修改ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            send_insruction = "50 06 00 01 00 08 D4 4D ";
+            send_instruction = "50 06 00 01 00 08 D4 4D ";
             //button2.PerformClick();
             Send();
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
-            if (send_insruction != "")
+
+            if (this.timer1.Enabled == false)
             {
-                if (this.timer1.Enabled == false)
-                {
-                    this.timer1.Enabled = true;
-                    timer1.Start();
-                    button3.Text = "停止";
-                    button3.BackColor = Color.Gray;
-                }
-                else
-                {
-                    this.timer1.Enabled = false;
-                    timer1.Stop();
-                    button3.Text = "开始";
-                    button3.BackColor = Color.SteelBlue;
-                }
+                this.timer1.Enabled = true;
+                timer1.Start();
+                button3.Text = "停止";
+                button3.BackColor = Color.Gray;
             }
             else
             {
-                MessageBox.Show("请先选择功能");
+                this.timer1.Enabled = false;
+                timer1.Stop();
+                button3.Text = "开始";
+                button3.BackColor = Color.SteelBlue;
             }
 
 
 
-            
+
+
+
         }
 
         private void 数据ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -665,38 +653,40 @@ namespace angle_control
         private void 角度ToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             //panel1.Controls.Clear();
-            f2.Visible = false;
-            f3.TopLevel = false;
+            //f2.Visible = false;
+            //f3.TopLevel = false;
             //f2.Parent = panel1;
             //this.panel1.Controls.Add(f3);
-            f3.FormBorderStyle = FormBorderStyle.None;
-            f3.Dock = DockStyle.Fill;
-            f3.Show();
+            panel1.Controls.Clear();
+            f5.TopLevel = false;
+            f5.Parent = panel1;
+            f5.FormBorderStyle = FormBorderStyle.None;
+            f5.Dock = DockStyle.Fill;
+            f5.Show();
         }
         private void 加速度ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //panel1.Controls.Clear();
-            f2.Visible = false;
-            f3.TopLevel = false;
+            //f2.Visible = false;
+            //f3.TopLevel = false;
             //f2.Parent = panel1;
             //this.panel1.Controls.Add(f3);
+            panel1.Controls.Clear();
+            f3.Parent = panel1;
+            f3.TopLevel = false;
             f3.FormBorderStyle = FormBorderStyle.None;
             f3.Dock = DockStyle.Fill;
             f3.Show();
         }
-
-        private void 加速度ToolStripMenuItem1_Click(object sender, EventArgs e)
-        {
-            send_insruction = "50 03 00 34 00 03 49 84";
-            Send();
-        }
-
         private void 轨迹ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //panel1.Controls.Clear();
             //f2.Visible = false;
-            f2.Visible = false;
-            f3.Visible = false;
+            //f2.Visible = false;
+            //f3.Visible = false;
+            //f5.Visible = false;
+            panel1.Controls.Clear();
+            f4.Parent = panel1;
             f4.TopLevel = false;
             //f2.Parent = panel1;
             //this.panel1.Controls.Add(f3);
@@ -705,9 +695,17 @@ namespace angle_control
             f4.Show();
         }
 
+        private void 加速度ToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            send_instruction = "50 03 00 34 00 03 49 84";
+            Send();
+        }
+
+
+
         private void 轨迹ToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            send_insruction = "50 03 00 34 00 03 49 84";
+            send_instruction = "50 03 00 34 00 03 49 84";
             Acceleration_x[0] = 0;
             Acceleration_x[1] = 0;
             Acceleration_y[0] = 0;
@@ -721,28 +719,28 @@ namespace angle_control
 
         private void 参考系修改自制ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            send_insruction = "50 03 00 3D 00 03 99 86";
-            //A[0, 0] = Math.Cos(Az) * Math.Cos(Ay);
-            //A[0, 1] = Math.Cos(Az) * Math.Sin(Ay) * Math.Sin(Ax) - Math.Sin(Az) * Math.Cos(Ay);
-            //A[0, 2] = Math.Cos(Az) * Math.Sin(Ay) * Math.Cos(Ax) + Math.Sin(Az) * Math.Cos(Az);
-            //A[1, 0] = Math.Sin(Az) * Math.Cos(Ay);
-            //A[1, 1] = Math.Sin(Az) * Math.Sin(Ay) * Math.Sin(Ax) + Math.Cos(Az) * Math.Cos(Ax);
-            //A[1, 2] = Math.Sin(Az) * Math.Sin(Ay) * Math.Cos(Ax) - Math.Cos(Az) * Math.Sin(Ax);
-            //A[2, 0] = -Math.Sin(Ay);
-            //A[2, 1] = Math.Cos(Ay) * Math.Sin(Ax);
-            //A[2, 2] = Math.Cos(Ay) * Math.Cos(Ax);
+            send_instruction = "50 03 00 3D 00 03 99 86";
 
-            //A[0, 0] = Math.Cos(Ax) * Math.Cos(Ay);
-            //A[0, 1] = -Math.Cos(Ay)*Math.Sin(Ax);
-            //A[0, 2] = Math.Sin(Ay);
-            //A[1, 0] = Math.Sin(Az) * Math.Sin(Ay) * Math.Cos(Ax) +Math.Cos(Az) * Math.Sin(Ax);
-            //A[1, 1] = -Math.Sin(Az) * Math.Sin(Ay) * Math.Sin(Ax) + Math.Cos(Az) * Math.Cos(Ax);
-            //A[1, 2] = - Math.Cos(Ay) * Math.Sin(Az);
-            //A[2, 0] = -Math.Cos(Az)*Math.Sin(Ay)*Math.Cos(Ax)+Math.Sin(Az)*Math.Sin(Ax);
-            //A[2, 1] = Math.Cos(Az) * Math.Sin(Ax) * Math.Sin(Ay)+Math.Sin(Az)*Math.Cos(Ax);
-            //A[2, 2] = Math.Cos(Ay) * Math.Cos(Az);
 
-            A[0, 0] = Math.Cos(Az*(Math.PI/180)) * Math.Cos(Ay * (Math.PI / 180));
+            //A[0, 0] = Math.Cos(Az*(Math.PI/180)) * Math.Cos(Ay * (Math.PI / 180));
+            //A[0, 1] = Math.Cos(Az * (Math.PI / 180)) * Math.Sin(Ay * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180)) - Math.Sin(Az * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180));
+            //A[0, 2] = Math.Cos(Az * (Math.PI / 180)) * Math.Sin(Ay * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180)) + Math.Sin(Az * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180));
+            //A[1, 0] = Math.Sin(Az * (Math.PI / 180)) * Math.Cos(Ay * (Math.PI / 180));
+            //A[1, 1] = Math.Sin(Az * (Math.PI / 180)) * Math.Sin(Ay * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180)) + Math.Cos(Az * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180));
+            //A[1, 2] = Math.Sin(Az * (Math.PI / 180)) * Math.Sin(Ay * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180)) - Math.Cos(Az * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180));
+            //A[2, 0] = -Math.Sin(Ay * (Math.PI / 180));
+            //A[2, 1] = Math.Cos(Ay * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180));
+            //A[2, 2] = Math.Cos(Ay * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180));
+            A = angle_ola_zyx(Ax, Ay, Az);
+            flag = 1;
+            Send();
+
+
+        }
+        static DenseMatrix angle_ola_zyx(double Ax, double Ay, double Az)
+        {
+            DenseMatrix A = new DenseMatrix(3, 3);
+            A[0, 0] = Math.Cos(Az * (Math.PI / 180)) * Math.Cos(Ay * (Math.PI / 180));
             A[0, 1] = Math.Cos(Az * (Math.PI / 180)) * Math.Sin(Ay * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180)) - Math.Sin(Az * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180));
             A[0, 2] = Math.Cos(Az * (Math.PI / 180)) * Math.Sin(Ay * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180)) + Math.Sin(Az * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180));
             A[1, 0] = Math.Sin(Az * (Math.PI / 180)) * Math.Cos(Ay * (Math.PI / 180));
@@ -751,12 +749,61 @@ namespace angle_control
             A[2, 0] = -Math.Sin(Ay * (Math.PI / 180));
             A[2, 1] = Math.Cos(Ay * (Math.PI / 180)) * Math.Sin(Ax * (Math.PI / 180));
             A[2, 2] = Math.Cos(Ay * (Math.PI / 180)) * Math.Cos(Ax * (Math.PI / 180));
-            flag = 1;
-            Send();
-            
-            
+            return A;
         }
+        static DenseMatrix delete_grativy(double Ax, double Ay, double Az)
+        {
+            DenseMatrix A = new DenseMatrix(3, 3);
+            DenseMatrix B = new DenseMatrix(3, 1);
 
+
+            double z =Az * Math.PI / 180;
+            double x = Ax * Math.PI / 180;
+            double y = Ay * Math.PI / 180;
+            A[0, 0] = Math.Cos(z) * Math.Cos(y);
+            A[0, 1] = Math.Cos(z) * Math.Sin(y) * Math.Sin(x) - Math.Sin(z) * Math.Cos(x);
+            A[0, 2] = Math.Cos(z) * Math.Sin(y) * Math.Cos(x) + Math.Sin(z) * Math.Sin(x);
+            A[1, 0] = Math.Sin(z) * Math.Cos(y);
+            A[1, 1] = Math.Sin(z) * Math.Sin(y) * Math.Sin(x) + Math.Cos(z) * Math.Cos(x);
+            A[1, 2] = Math.Sin(z) * Math.Sin(y) * Math.Cos(x) - Math.Cos(z) * Math.Sin(x);
+            A[2, 0] = -Math.Sin(y);
+            A[2, 1] = Math.Cos(y) * Math.Sin(x);
+            A[2, 2] = Math.Cos(y) * Math.Cos(x);
+            B[0, 0] = 0;
+            B[1, 0] = 0;
+            B[2, 0] = 1;
+            B = (DenseMatrix)(A.Transpose() * B);
+
+            B = B * 9.8;
+
+
+            return B;
+        }
+    private void panel1_Paint_1(object sender, PaintEventArgs e)
+        {
+
+        }
+        
+
+
+        public void 清零ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            currentCount = 0;
+            foreach (var series in f3.chart1.Series)
+            {
+                series.Points.Clear();
+            }
+            foreach (var series in f4.chart1.Series)
+            {
+                series.Points.Clear();
+            }
+            foreach (var series in f5.chart1.Series)
+            {
+                series.Points.Clear();
+            }
+
+            flag = 0;
+        }
     }
     }
 
