@@ -8,34 +8,43 @@ namespace ConsoleApp1
     {
         static void Main(string[] args)
         {
-            double[] velocty = new double[2];
-            double[] Acceleration_y = new double[2];
-            double time = 0.025;
-            double[] distance = new double[2];
-            distance[0] = 0;
-            velocty[0] = 0;
+            Console.WriteLine(Math.Cos(60 * Math.PI / 180));
+            //double[] velocty = new double[2];
+            //double[] Acceleration_y = new double[2];
+            //double time = 0.02;
+            //double[] distance = new double[2];
+            //distance[0] = 0;
+            //velocty[0] = 0;
+            //Acceleration_y[0] = 0;
 
-            Acceleration_y[0] = 0;
-            Acceleration_y[1] =0.025;
+            //for (int i=0;i<147;i++)
+            //{
+            //    Acceleration_y[1] = i;
+            //    distance[0] = distance[0] + time * velocty[0] + 1 / (6 * time) * (Acceleration_y[1] - Acceleration_y[0]) * Math.Pow(time, 3) + 0.5 * Acceleration_y[0] * Math.Pow(time, 2);
+            //    velocty[0] = velocty[0] + (Acceleration_y[1] + Acceleration_y[0]) * time / 2;
+            //    Acceleration_y[0] = Acceleration_y[1];
+            //    //distance[0] = distance[0] + time * velocty[0]+ 0.5 * Acceleration_y[1] * Math.Pow(time, 2);
+            //    //velocty[0] = velocty[0] + Acceleration_y[1]* time ;
+            //    //Acceleration_y[0] = Acceleration_y[1];
+            //    Console.WriteLine("Acceleration_y:{0}", Acceleration_y[1]);
+            //    Console.WriteLine(distance[0]);
+            //}
 
-            distance[0] = distance[0] + time * velocty[0] + 1 / (6 * time) * (Acceleration_y[1] - Acceleration_y[0]) * Math.Pow(time, 3) + 0.5 * Acceleration_y[0] * Math.Pow(time, 2);
-            velocty[0] = velocty[0] + (Acceleration_y[1] + Acceleration_y[0]) * time / 2;
 
-            Console.WriteLine(distance[0]);
 
-            Acceleration_y[0] = 0.025;
-            Acceleration_y[1] = 0.05;
-            distance[0] = distance[0] + time * velocty[0] + 1 / (6 * time) * (Acceleration_y[1] - Acceleration_y[0]) * Math.Pow(time, 3) + 0.5 * Acceleration_y[0] * Math.Pow(time, 2);
-            velocty[0] = velocty[0] + (Acceleration_y[1] + Acceleration_y[0]) * time / 2;
+            //Acceleration_y[0] = 0.025;
+            //Acceleration_y[1] = 0.05;
+            //distance[0] = distance[0] + time * velocty[0] + 1 / (6 * time) * (Acceleration_y[1] - Acceleration_y[0]) * Math.Pow(time, 3) + 0.5 * Acceleration_y[0] * Math.Pow(time, 2);
+            //velocty[0] = velocty[0] + (Acceleration_y[1] + Acceleration_y[0]) * time / 2;
 
-            Console.WriteLine(distance[0]);
+            //Console.WriteLine(distance[0]);
 
-            Acceleration_y[0] = 0.05;
-            Acceleration_y[1] = 0.075;
-            distance[0] = distance[0] + time * velocty[0] + 1 / (6 * time) * (Acceleration_y[1] - Acceleration_y[0]) * Math.Pow(time, 3) + 0.5 * Acceleration_y[0] * Math.Pow(time, 2);
-            velocty[0] = velocty[0] + (Acceleration_y[1] + Acceleration_y[0]) * time / 2;
+            //Acceleration_y[0] = 0.05;
+            //Acceleration_y[1] = 0.075;
+            //distance[0] = distance[0] + time * velocty[0] + 1 / (6 * time) * (Acceleration_y[1] - Acceleration_y[0]) * Math.Pow(time, 3) + 0.5 * Acceleration_y[0] * Math.Pow(time, 2);
+            //velocty[0] = velocty[0] + (Acceleration_y[1] + Acceleration_y[0]) * time / 2;
 
-            Console.WriteLine(distance[0]);
+            //Console.WriteLine(distance[0]);
 
 
             //通过求重力加速度在x轴上的分力，抵消静止时加速的

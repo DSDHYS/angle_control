@@ -17,7 +17,9 @@ namespace angle_control
         Form2 f2 = new Form2();
         Form3 f3 = new Form3();
         Form4 f4 = new Form4();
-        Form3 f5 = new Form3();
+        Form5 f5 = new Form5();
+        Form6 f6 = new Form6();
+
         public string send_instruction = "";//to receive the instuction
         double[] Acceleration_x = new double[2];
         double[] Acceleration_y = new double[2];
@@ -28,9 +30,13 @@ namespace angle_control
         DenseMatrix A_2 = new DenseMatrix(3, 3);
         DenseMatrix B = new DenseMatrix(3, 1);
         DenseMatrix C_2 = new DenseMatrix(3, 3);
-        DenseMatrix C = new DenseMatrix(3, 1);
+        DenseMatrix time= new DenseMatrix(3, 2);
         int flag = 0;
         int send_get = 0;
+        int time_flag = 0;
+        int time_zero_x = 0;
+        int time_zero_y = 0;
+        //int count=0;
 
 
         public Form1()
@@ -48,6 +54,10 @@ namespace angle_control
             //}
             //string[] baud = { "43000", "56000", "57600", "115200", "128000", "230400", "256000", "460800" };
             //comboBox2.Items.AddRange(baud);
+            f3.chart1.ChartAreas[0].AxisY.Maximum = 0.2;
+            f3.chart1.ChartAreas[0].AxisY.Minimum = -0.2;
+            f4.chart1.ChartAreas[0].AxisY.Maximum = 1;
+            f4.chart1.ChartAreas[0].AxisY.Minimum = -1;
             A[0, 0] = 1;
             A[1, 1] = 1;
             A[2, 2] = 1;
@@ -56,6 +66,7 @@ namespace angle_control
             f3.TopLevel = false;
             f4.TopLevel = false;
             f5.TopLevel = false;
+            f6.TopLevel = false;
 
             this.panel1.Controls.Add(f2);
             //this.panel1.Controls.Add(f3);
@@ -254,11 +265,23 @@ namespace angle_control
 
                     if (record_strs.Length == 12 && Crc.IsCrcOK(byteget))
                     {
+                        if(send_instruction== "50 03 00 31 00 03 59 85")
+                        {
+                            send_get++;
+                                time[0, time_flag ] = byteget[6];//分
+                                time[1, time_flag] = byteget[5];//秒
+                                time[2, time_flag ] = (short)(((short)byteget[7] << 8) | byteget[8]);
+
+
+
+
+                           // Debug.WriteLine("分：{1}秒：{0}毫秒:{2}", time[0, time_flag], time[1, time_flag], time[2, time_flag]) ;
+                        }
                         if (send_instruction == "50 03 00 3D 00 03 99 86")
                         {
-                            send_get = 1;
+                            send_get++;
 
-                            Debug.WriteLine("angle get");
+                           // Debug.WriteLine("angle get:time:{0}",currentCount);
                             Ax = (short)(((short)byteget[3] << 8) | byteget[4]) / (double)32768 * (double)180;
                             Ay = (short)(((short)byteget[5] << 8) | byteget[6]) / (double)32768 * (double)180;
                             Az = (short)(((short)byteget[7] << 8) | byteget[8]) / (double)32768 * (double)180;
@@ -320,28 +343,32 @@ namespace angle_control
                         if (send_instruction == "50 03 00 34 00 03 49 84")
                         {
                             send_get = 0;
+                            time_flag = 0;
 
-                           // Debug.WriteLine("accelerate get");
-                            f3.chart1.ChartAreas[0].AxisY.Maximum = 30;
-                            f3.chart1.ChartAreas[0].AxisY.Minimum = -30;
-                            f4.chart1.ChartAreas[0].AxisY.Maximum = 0.2;
-                            f4.chart1.ChartAreas[0].AxisY.Minimum = -0.2;
 
-                            //Acceleration_x[1] = (short)(((short)byteget[3] << 8) | byteget[4]) / (double)32768 * (double)(16 * 9.8);
-                            //Debug.WriteLine(Acceleration_x[1]);
+
+                          //  Debug.WriteLine("accelerate get:time:{0}",currentCount);
+
+
+
                             B = delete_grativy(Ax, Ay, Az);
-                            Acceleration_x[1] = (short)(((short)byteget[3] << 8) | byteget[4]) / (double)32768 * (double)(16 * 9.8) - B[0, 0];
-                            //Debug.WriteLine(delete_grativy(Ax, Ay, Az)[0, 0]);
-                           // Debug.WriteLine("B is{0}",B[1,0]);
-                            //Acceleration_y[1] = (short)(((short)byteget[5] << 8) | byteget[6]) / (double)32768 * (double)(16 * 9.8) ;
-                            //Debug.WriteLine("y is{0}", Acceleration_y[1]);
+
+
+                            //Acceleration_x[1] = Math.Cos(B[2,0]*Math.PI/180)*((short)(((short)byteget[3] << 8) | byteget[4]) / (double)32768 * (double)(16 * 9.8) - A_2[0, 0])- Math.Sin(B[2, 0] * Math.PI / 180)*((short)(((short)byteget[5] << 8) | byteget[6]) / (double)32768 * (double)(16 * 9.8) - A_2[1, 0]);
+                            Acceleration_x[1] =  (short)(((short)byteget[3] << 8) | byteget[4]) / (double)32768 * (double)(16 * 9.8) - B[0, 0];
+                            Acceleration_x[1] = Math.Round(Acceleration_x[1], 2);
+                            Debug.WriteLine("Acceleration_x:{0}",Acceleration_x[1]);
+
+ 
 
                             Acceleration_y[1] = (short)(((short)byteget[5] << 8) | byteget[6]) / (double)32768 * (double)(16 * 9.8) - B[1, 0];
+                            Acceleration_y[1] = Math.Round(Acceleration_y[1], 2);
+
                             //Debug.WriteLine("y is{0}", Acceleration_y[1]);
 
-                            Acceleration_z = (short)(((short)byteget[7] << 8) | byteget[8]) / (double)32768 * (double)(16 * 9.8) -B[2, 0];
-
-                            //if (Acceleration_x[1]<0.01&& Acceleration_x[1] >- 0.01)
+                            Acceleration_z = (short)(((short)byteget[7] << 8) | byteget[8]) / (double)32768 * (double)(16 * 9.8) - B[2, 0];
+                            //Debug.WriteLine("Acceleration_z:{0}", Acceleration_z);
+                            //if(Acceleration_x[1]<0.01&& Acceleration_x[1] > -0.01)
                             //{
                             //    Acceleration_x[1] = 0;
                             //}
@@ -349,44 +376,86 @@ namespace angle_control
                             //{
                             //    Acceleration_y[1] = 0;
                             //}
-                            //if (Acceleration_z < 0.01 && Acceleration_z > -0.01)
+
+                            //if (Acceleration_x[1] < 0.02 && Acceleration_x[1] > -0.02)
                             //{
-                            //    Acceleration_z = 0;
+                            //    Acceleration_x[1] = 0;
+
+                            //    time_zero_x++;
+                            //    if (time_zero_x == 10)
+                            //    {
+                            //        velocty[0] = 0;
+                            //        time_zero_x = 0;
+                            //    }
+
                             //}
-                        //if (Acceleration_x[1] == 0&& Acceleration_x[0]==0)
-                        //    {
-                        //        velocty[0] = 0;
 
-                        //    }
-                        //if( Acceleration_y[1] == 0 && Acceleration_y[0] == 0)
-                        //    {
-                        //        velocty[1] = 0;
+                            //if (Acceleration_y[1] < 0.02 && Acceleration_y[1] > -0.02)
+                            //{
+                            //    Acceleration_y[1] = 0;
+                            //    time_zero_y++;
+                            //    if (time_zero_y == 10)
+                            //    {
+                            //        velocty[1] = 0;
+                            //        time_zero_y = 0;
+                            //    }
 
-                        //    }
-                            //Debug.WriteLine(Acceleration_y[1]);
-                            //Debug.WriteLine(velocty[1]);
-                            double time = 0.025;
-                            distance[0] = distance[0] + time* velocty[0] + 1/ (6*time) * (Acceleration_x[1] - Acceleration_x[0]) * Math.Pow(time, 3) + 0.5 * Acceleration_x[0] * Math.Pow(time, 2);
-                            velocty[0] = velocty[0] + (Acceleration_x[1] + Acceleration_x[0]) * time / 2;
-                            Acceleration_x[0] = Acceleration_x[1];
+                            //}
 
-                            //    distance[1] = distance[1] + time * velocty[1] + 1 / (6 * time) * (Acceleration_y[1] - Acceleration_y[0]) * Math.Pow(time, 3) + 0.5 * Acceleration_y[0] * Math.Pow(time, 2);
+                            if (time[0, 0]==0&& time[1, 0]==0&& time[2, 0]==0)
+                            {
+                                time[0, 0] = time[0, 1];
+                                time[1, 0] = time[1, 1];
+                                time[2, 0] = time[2, 1];
+                            }
+
+
+                            double time_span = (time[0,1]-time[0,0])*60+ (time[1, 1] - time[1, 0])+ (time[2, 1] - time[2, 0])/1000;
+                            //Debug.WriteLine("分：{0}秒：{1}毫秒:{2}", time[0, 0], time[1, 0], time[2, 0]);
+                            //Debug.WriteLine("分：{0}秒：{1}毫秒:{2}", time[0, 1], time[1, 1], time[2, 1]);
+                            //Debug.WriteLine("分：{0}秒：{1}毫秒:{2}", (time[0, 1] -time[0, 0]) * 60, time[1, 1] - time[1, 0], (time[2, 1] - time[2, 0]) / 1000);
+                            Debug.WriteLine(time_span);
+
+
+
+
+                            time[0, 0] = time[0, 1];
+                            time[1, 0] = time[1, 1];
+                            time[2, 0] = time[2, 1];
+
+
+
+                            Debug.WriteLine("distance:{0}", distance[0]);
+
+                            //distance[0] = distance[0] + time * velocty[0] +  0.5 * Acceleration_x[0] * Math.Pow(time, 2);
+                            //velocty[0] = velocty[0] + Acceleration_x[1]* time ;
+     //distance[1] = distance[1] + time * velocty[1] + 1 / (6 * time) * (Acceleration_y[1] - Acceleration_y[0]) * Math.Pow(time, 3) + 0.5 * Acceleration_y[0] * Math.Pow(time, 2);
                             //velocty[1] = velocty[1] + (Acceleration_y[1] + Acceleration_y[0]) * time / 2;
                             //Acceleration_y[0] = Acceleration_y[1];
-                            distance[1] = distance[1] + time * velocty[1]+ 0.5 * (Acceleration_y[1] - Acceleration_y[0]) * Math.Pow(time, 2);
-                            velocty[1] = velocty[1] + (Acceleration_y[1] + Acceleration_y[0]) * time / 2;
-                            Acceleration_y[0] = Acceleration_y[1];
-                            Debug.WriteLine(Acceleration_y[1]);
-                            Debug.WriteLine(Acceleration_y[0]);
+                            //  Debug.WriteLine("Acceleration_y:{0}", Acceleration_y[1]);
 
-                            Debug.WriteLine(velocty[1]);
-                            Debug.WriteLine("路程X:{0}", distance [0]);
-                            Debug.WriteLine("路程Y:{0}", distance[1]);
+                            if (time_span != 0)
+                            {
+                                distance[0] = distance[0] + time_span * velocty[0] + 1 / (6 * time_span) * (Acceleration_x[1] - Acceleration_x[0]) * Math.Pow(time_span, 3) + 0.5 * Acceleration_x[0] * Math.Pow(time_span, 2);
+                                distance[1] = distance[1] + time_span * velocty[1] + 1 / (6 * time_span) * (Acceleration_y[1] - Acceleration_y[0]) * Math.Pow(time_span, 3) + 0.5 * Acceleration_y[0] * Math.Pow(time_span, 2);
+                            }
+                            Acceleration_x[0] = Acceleration_x[1];
+                            Acceleration_y[0] = Acceleration_y[1];
+                            velocty[0] = velocty[0] + (Acceleration_x[1] + Acceleration_x[0]) * time_span / 2;
+                            velocty[1] = velocty[1] + (Acceleration_y[1] + Acceleration_y[0]) * time_span / 2;
+                            //Debug.WriteLine("Acceleration_x:{0}", Acceleration_x[1]);
+                            //Debug.WriteLine("Acceleration_y:{0}", Acceleration_y[1]);
+                            //Debug.WriteLine("Acceleration_z:{0}", Acceleration_z);
+
+
+                            // Debug.WriteLine("路程X:{0}", distance [0]);
+                            // Debug.WriteLine("路程Y:{0}", distance[1]);
 
 
                             f4.chart1.Series[0].Points.AddXY(currentCount, distance[0]);
                             f4.chart1.Series[1].Points.AddXY(currentCount, distance[1]);
-
+                            f6.chart1.Series[0].Points.AddXY(currentCount, velocty[0]);
+                            f6.chart1.Series[1].Points.AddXY(currentCount, velocty[1]);
                             if (f3.chart1.Series[0].Points.Count == 100)
                             {
                                 f3.chart1.ChartAreas[0].AxisX.Maximum = currentCount;
@@ -572,27 +641,45 @@ namespace angle_control
         public double Ax;
         public double Ay;
         public double Az;
+        public int start;
+
         public void timer1_Tick(object sender, EventArgs e)
         {
 
             currentCount += 1;
+            if (time_flag==0)
+            {
+                start = currentCount;
+                send_instruction = "50 03 00 31 00 03 59 85";
+                Send();
+                send_get = send_get - 1;
+                time_flag++;
 
-            if (send_get == 0)
+            }
+            if (send_get==0)//时间
+            {
+                send_instruction = "50 03 00 31 00 03 59 85";
+                Send();
+            }
+            if (send_get == 1)//角度
             {
                 send_instruction = "50 03 00 3D 00 03 99 86";
                 Send();
-                Debug.WriteLine("angel");
+               // Debug.WriteLine("angel:time:{0}", currentCount);
             }
 
 
 
-            if (send_get == 1)
+            if (send_get == 2)//加速度
             {
                 send_instruction = "50 03 00 34 00 03 49 84 ";
                 Send();
-                Debug.WriteLine("accelerate");
+                //Debug.WriteLine("accelerate:time:{0}", currentCount);
+
 
             }
+            //Debug.WriteLine("currentCount:{0}", currentCount);
+
 
 
 
@@ -649,6 +736,7 @@ namespace angle_control
                 timer1.Start();
                 button3.Text = "停止";
                 button3.BackColor = Color.Gray;
+
             }
             else
             {
@@ -721,6 +809,17 @@ namespace angle_control
             f4.Dock = DockStyle.Fill;
             f4.Show();
         }
+        private void 速度ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            panel1.Controls.Clear();
+            f6.Parent = panel1;
+            f6.TopLevel = false;
+            //f2.Parent = panel1;
+            //this.panel1.Controls.Add(f3);
+            f6.FormBorderStyle = FormBorderStyle.None;
+            f6.Dock = DockStyle.Fill;
+            f6.Show();
+        }
 
         private void 加速度ToolStripMenuItem1_Click(object sender, EventArgs e)
         {
@@ -732,16 +831,11 @@ namespace angle_control
 
         private void 轨迹ToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            send_instruction = "50 03 00 34 00 03 49 84";
-            Acceleration_x[0] = 0;
-            Acceleration_x[1] = 0;
-            Acceleration_y[0] = 0;
-            Acceleration_y[1] = 0;
-            velocty[0] = 0;
-            velocty[1] = 0;
-            distance[0] = 0;
-            distance[1] = 0;
-            Send();
+            send_instruction = "50 03 00 3D 00 03 99 86";
+            A = angle_ola_zyx(Ax, Ay, Az);
+            flag = 1;
+            button3.PerformClick();
+
         }
 
         private void 参考系修改自制ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -815,7 +909,12 @@ namespace angle_control
 
         public void 清零ToolStripMenuItem_Click(object sender, EventArgs e)
         {
+
             currentCount = 0;
+            flag = 0;
+            send_get = 0;
+            time_flag = 0;
+            start = 0;
             for (int i = 0; i < 2; i++)
             {
                 distance[i] = 0;
@@ -824,6 +923,16 @@ namespace angle_control
             for (int i = 0; i < 2; i++)
             {
                 velocty[i] = 0;
+
+            }
+            for (int i = 0; i < 2; i++)
+            {
+                Acceleration_x[i] = 0;
+
+            }
+            for (int i = 0; i < 2; i++)
+            {
+                Acceleration_y[i] = 0;
 
             }
             foreach (var series in f3.chart1.Series)
@@ -838,6 +947,10 @@ namespace angle_control
             {
                 series.Points.Clear();
             }
+            foreach (var series in f6.chart1.Series)
+            {
+                series.Points.Clear();
+            }
 
             flag = 0;
         }
@@ -846,6 +959,12 @@ namespace angle_control
         {
             Application.Restart();
 
+        }
+
+        private void 加速度校正ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            send_instruction = "50 06 00 01 00 01 14 4B ";
+            Send();
         }
     }
     }
