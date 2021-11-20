@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using MathNet.Numerics;
 using MathNet.Numerics.LinearAlgebra.Double;
 
 
@@ -31,6 +32,12 @@ namespace angle_control
         DenseMatrix B = new DenseMatrix(3, 1);
         DenseMatrix C_2 = new DenseMatrix(3, 3);
         DenseMatrix time= new DenseMatrix(3, 2);
+        DenseMatrix DDT_x = new DenseMatrix(1, 8);
+        DenseMatrix DDT_y = new DenseMatrix(1, 8);
+        Complex32 W = new Complex32((float)Math.Sqrt(2) / 2, -(float)Math.Sqrt(2) / 2);
+
+
+
         int flag = 0;
         int send_get = 0;
         int time_flag = 0;
@@ -356,13 +363,15 @@ namespace angle_control
 
                             //Acceleration_x[1] = Math.Cos(B[2,0]*Math.PI/180)*((short)(((short)byteget[3] << 8) | byteget[4]) / (double)32768 * (double)(16 * 9.8) - A_2[0, 0])- Math.Sin(B[2, 0] * Math.PI / 180)*((short)(((short)byteget[5] << 8) | byteget[6]) / (double)32768 * (double)(16 * 9.8) - A_2[1, 0]);
                             Acceleration_x[1] =  (short)(((short)byteget[3] << 8) | byteget[4]) / (double)32768 * (double)(16 * 9.8) - B[0, 0];
-                            Acceleration_x[1] = Math.Round(Acceleration_x[1], 2);
+                            //Acceleration_x[1] = Math.Round(Acceleration_x[1], 2);
                             Debug.WriteLine("Acceleration_x:{0}",Acceleration_x[1]);
 
- 
+
+
+
 
                             Acceleration_y[1] = (short)(((short)byteget[5] << 8) | byteget[6]) / (double)32768 * (double)(16 * 9.8) - B[1, 0];
-                            Acceleration_y[1] = Math.Round(Acceleration_y[1], 2);
+                            //Acceleration_y[1] = Math.Round(Acceleration_y[1], 2);
 
                             //Debug.WriteLine("y is{0}", Acceleration_y[1]);
 
@@ -401,6 +410,7 @@ namespace angle_control
                             //    }
 
                             //}
+
 
                             if (time[0, 0]==0&& time[1, 0]==0&& time[2, 0]==0)
                             {
