@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using MathNet.Numerics;
+using MathNet.Numerics.IntegralTransforms;
 using MathNet.Numerics.LinearAlgebra.Double;
 
 
@@ -32,9 +33,10 @@ namespace angle_control
         DenseMatrix B = new DenseMatrix(3, 1);
         DenseMatrix C_2 = new DenseMatrix(3, 3);
         DenseMatrix time= new DenseMatrix(3, 2);
-        DenseMatrix DDT_x = new DenseMatrix(1, 8);
-        DenseMatrix DDT_y = new DenseMatrix(1, 8);
-        Complex32 W = new Complex32((float)Math.Sqrt(2) / 2, -(float)Math.Sqrt(2) / 2);
+        float[] data_64_x = new float[64];
+        int time_aceleration=0;//记录加速度次数
+        double time_span_x=0;
+        double[] time_span_x_64 = new double[64];
 
 
 
@@ -61,8 +63,8 @@ namespace angle_control
             //}
             //string[] baud = { "43000", "56000", "57600", "115200", "128000", "230400", "256000", "460800" };
             //comboBox2.Items.AddRange(baud);
-            f3.chart1.ChartAreas[0].AxisY.Maximum = 0.2;
-            f3.chart1.ChartAreas[0].AxisY.Minimum = -0.2;
+            //f3.chart1.ChartAreas[0].AxisY.Maximum = 0.2;
+            //f3.chart1.ChartAreas[0].AxisY.Minimum = -0.2;
             f4.chart1.ChartAreas[0].AxisY.Maximum = 1;
             f4.chart1.ChartAreas[0].AxisY.Minimum = -1;
             A[0, 0] = 1;
@@ -363,6 +365,7 @@ namespace angle_control
 
                             //Acceleration_x[1] = Math.Cos(B[2,0]*Math.PI/180)*((short)(((short)byteget[3] << 8) | byteget[4]) / (double)32768 * (double)(16 * 9.8) - A_2[0, 0])- Math.Sin(B[2, 0] * Math.PI / 180)*((short)(((short)byteget[5] << 8) | byteget[6]) / (double)32768 * (double)(16 * 9.8) - A_2[1, 0]);
                             Acceleration_x[1] =  (short)(((short)byteget[3] << 8) | byteget[4]) / (double)32768 * (double)(16 * 9.8) - B[0, 0];
+                            data_64_x[time_aceleration] = (float)Acceleration_x[1];
                             //Acceleration_x[1] = Math.Round(Acceleration_x[1], 2);
                             Debug.WriteLine("Acceleration_x:{0}",Acceleration_x[1]);
 
@@ -421,10 +424,27 @@ namespace angle_control
 
 
                             double time_span = (time[0,1]-time[0,0])*60+ (time[1, 1] - time[1, 0])+ (time[2, 1] - time[2, 0])/1000;
+                            time_span_x = time_span_x + time_span;
+                            time_span_x_64[time_aceleration] = time_span_x;
                             //Debug.WriteLine("分：{0}秒：{1}毫秒:{2}", time[0, 0], time[1, 0], time[2, 0]);
                             //Debug.WriteLine("分：{0}秒：{1}毫秒:{2}", time[0, 1], time[1, 1], time[2, 1]);
                             //Debug.WriteLine("分：{0}秒：{1}毫秒:{2}", (time[0, 1] -time[0, 0]) * 60, time[1, 1] - time[1, 0], (time[2, 1] - time[2, 0]) / 1000);
                             Debug.WriteLine(time_span);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -466,34 +486,59 @@ namespace angle_control
                             f4.chart1.Series[1].Points.AddXY(currentCount, distance[1]);
                             f6.chart1.Series[0].Points.AddXY(currentCount, velocty[0]);
                             f6.chart1.Series[1].Points.AddXY(currentCount, velocty[1]);
-                            if (f3.chart1.Series[0].Points.Count == 100)
+                            if (time_aceleration==63)
                             {
-                                f3.chart1.ChartAreas[0].AxisX.Maximum = currentCount;
-                                f3.chart1.ChartAreas[0].AxisX.Minimum = currentCount - 50;
-
-                                for (int i = 0; i < 99; i++)
+                                FFT a = new FFT();
+                                float[] b = a.ResultArr(data_64_x);
+                                for (int i=0;i<64;i++)
                                 {
-                                    f3.chart1.Series[0].Points[i] = f3.chart1.Series[0].Points[i + 1];
-                                    f3.chart1.Series[1].Points[i] = f3.chart1.Series[1].Points[i + 1];
-                                    f3.chart1.Series[2].Points[i] = f3.chart1.Series[2].Points[i + 1];
+                                    if (time_span_x_64[i] != 0)
+                                    {
+                                        f3.chart1.Series[3].Points.AddXY(time_span_x_64[i], b[i]);
+                                        Debug.WriteLine("currentCount:{0} b:{1}", time_span_x_64[i], b[i]);
+                                    }
+
 
                                 }
-                                f3.chart1.Series[0].Points.RemoveAt(0);
-                                f3.chart1.Series[0].Points.AddXY(currentCount, Acceleration_x[1]);
-                                f3.chart1.Series[1].Points.RemoveAt(0);
-                                f3.chart1.Series[1].Points.AddXY(currentCount, Acceleration_y[1]);
-                                f3.chart1.Series[2].Points.RemoveAt(0);
-                                f3.chart1.Series[2].Points.AddXY(currentCount, Acceleration_z);
-
-
-
                             }
-                            else
+                            if(time_span_x!=0)
                             {
-                                f3.chart1.Series[0].Points.AddXY(currentCount, Acceleration_x[1]);
-                                f3.chart1.Series[1].Points.AddXY(currentCount, Acceleration_y[1]);
-                                f3.chart1.Series[2].Points.AddXY(currentCount, Acceleration_z);
+                                f3.chart1.Series[0].Points.AddXY(time_span_x, Acceleration_x[1]);
+                                Debug.WriteLine("currentCount:{0} Acceleration_x:{1}", time_span_x, Acceleration_x[1]);
                             }
+
+                                //f3.chart1.Series[1].Points.AddXY(currentCount, Acceleration_y[1]);
+                                //f3.chart1.Series[2].Points.AddXY(currentCount, Acceleration_z);
+
+
+                            //if (f3.chart1.Series[0].Points.Count == 100)
+                            //{
+                            //    f3.chart1.ChartAreas[0].AxisX.Maximum = currentCount;
+                            //    f3.chart1.ChartAreas[0].AxisX.Minimum = currentCount - 50;
+
+                            //    for (int i = 0; i < 99; i++)
+                            //    {
+                            //        f3.chart1.Series[0].Points[i] = f3.chart1.Series[0].Points[i + 1];
+                            //        f3.chart1.Series[1].Points[i] = f3.chart1.Series[1].Points[i + 1];
+                            //        f3.chart1.Series[2].Points[i] = f3.chart1.Series[2].Points[i + 1];
+
+                            //    }
+                            //    f3.chart1.Series[0].Points.RemoveAt(0);
+                            //    f3.chart1.Series[0].Points.AddXY(currentCount, Acceleration_x[1]);
+                            //    f3.chart1.Series[1].Points.RemoveAt(0);
+                            //    f3.chart1.Series[1].Points.AddXY(currentCount, Acceleration_y[1]);
+                            //    f3.chart1.Series[2].Points.RemoveAt(0);
+                            //    f3.chart1.Series[2].Points.AddXY(currentCount, Acceleration_z);
+
+
+
+                            //}
+                            //else
+                            //{
+                            //    f3.chart1.Series[0].Points.AddXY(currentCount, Acceleration_x[1]);
+                            //    f3.chart1.Series[1].Points.AddXY(currentCount, Acceleration_y[1]);
+                            //    f3.chart1.Series[2].Points.AddXY(currentCount, Acceleration_z);
+                            //}
                         }
                     }
 
@@ -657,6 +702,7 @@ namespace angle_control
         {
 
             currentCount += 1;
+
             if (time_flag==0)
             {
                 start = currentCount;
@@ -682,12 +728,18 @@ namespace angle_control
 
             if (send_get == 2)//加速度
             {
+                if (time_aceleration == 63)
+                {
+                    time_aceleration = 0;
+                }
                 send_instruction = "50 03 00 34 00 03 49 84 ";
+                time_aceleration++;
                 Send();
                 //Debug.WriteLine("accelerate:time:{0}", currentCount);
 
 
             }
+
             //Debug.WriteLine("currentCount:{0}", currentCount);
 
 
@@ -919,12 +971,14 @@ namespace angle_control
 
         public void 清零ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            time_aceleration = 0;//记录加速度次数
+            Array.Clear(time_span_x_64, 0, time_span_x_64.Length);
             currentCount = 0;
             flag = 0;
             send_get = 0;
             time_flag = 0;
             start = 0;
+            time_span_x = 0;
             for (int i = 0; i < 2; i++)
             {
                 distance[i] = 0;
@@ -976,7 +1030,55 @@ namespace angle_control
             send_instruction = "50 06 00 01 00 01 14 4B ";
             Send();
         }
+
     }
+
+    public class FFT
+    {
+        MathNet.Numerics.Complex32[] mathNetComplexArrRe = new MathNet.Numerics.Complex32[64];
+        float[] resultArr = new float[64];
+        public float[] ResultArr(float[] data_64)
+        {
+            //float[] filterArr = new float[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+            float[] filterArr = new float[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+
+            resultArr = Filter(data_64, filterArr);
+            return resultArr;
+
+        }
+        /// <summary>
+        /// 滤波数组
+        /// </summary>
+        /// <param name="inData">输入的数据</param>
+        /// <param name="filterArr">滤波数组，可以自定义</param>
+        /// <returns></returns>
+        public float[] Filter(float[] inData, float[] filterArr)
+        {
+            float[] outArr = new float[64];
+            outArr = inData;
+            MathNet.Numerics.Complex32[] mathNetComplexArr = new MathNet.Numerics.Complex32[64];
+            for (int i = 0; i < mathNetComplexArr.Length; i++)
+            {
+                mathNetComplexArr[i] = new MathNet.Numerics.Complex32((float)outArr[i], 0);
+            }
+            Fourier.Forward(mathNetComplexArr);//傅里叶变换
+            for (int i = 0; i < mathNetComplexArr.Length; i++)
+            {
+                mathNetComplexArr[i] = new MathNet.Numerics.Complex32(mathNetComplexArr[i].Real * filterArr[i], mathNetComplexArr[i].Imaginary * filterArr[i]);
+            }
+            float[] ArrFreq = new float[64];
+            for (int i = 0; i < ArrFreq.Length; i++)
+            {
+                ArrFreq[i] = (float)Math.Sqrt(mathNetComplexArr[i].Imaginary * mathNetComplexArr[i].Imaginary + mathNetComplexArr[i].Real * mathNetComplexArr[i].Real);//利用LineRenderer显示频域结果
+            }
+            Fourier.Inverse(mathNetComplexArr);//逆傅里叶变换
+            for (int i = 0; i < mathNetComplexArr.Length; i++)
+            {
+                outArr[i] = mathNetComplexArr[i].Real;
+            }
+            return outArr;
+        }
     }
+}
 
 

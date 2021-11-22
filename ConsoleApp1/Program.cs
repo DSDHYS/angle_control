@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
 using MathNet.Numerics.LinearAlgebra.Double;
+using System.Collections;
+using System.Collections.Generic;
+
+using MathNet.Numerics.IntegralTransforms;
 
 namespace ConsoleApp1
 {
@@ -8,7 +12,17 @@ namespace ConsoleApp1
     {
         static void Main(string[] args)
         {
-            Console.WriteLine(Math.Cos(60 * Math.PI / 180));
+            FFT a=new FFT();
+            float[] b =a.ResultArr();
+            Console.WriteLine(b[1]);
+
+
+            ////////////////////////////////////////////////
+            //测试是弧度制还是角度制
+            //Console.WriteLine(Math.Cos(60 * Math.PI / 180));
+            //////////////////////////////////////////
+
+
             //double[] velocty = new double[2];
             //double[] Acceleration_y = new double[2];
             //double time = 0.02;
@@ -119,6 +133,54 @@ namespace ConsoleApp1
             //Console.WriteLine(A_2);
             //Console.WriteLine(B);
 
+        }
+
+    }
+
+
+    public class FFT
+    {
+        MathNet.Numerics.Complex32[] mathNetComplexArrRe = new MathNet.Numerics.Complex32[64];
+        float[] data = new float[] { 0, 3, 2, 5, 3, -7, -6, -9, -5, -13, -12, -15, -13, 17, 6, 19, 10, 13, 22, 22, 3, 27, 36, 19, 25, 13, 52, 45, 33, 22, 6, 19, 0, 3, 2, 5, 3, -7, -6, -9, -5, -13, -12, -15, -13, 17, 6, 19, 10, 13, 22, 22, 3, 27, 36, 19, 25, 13, 52, 45, 33, 22, 6, 19 };
+        float[] resultArr = new float[64];
+        public float[] ResultArr()
+        {
+            float[] filterArr = new float[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+            resultArr = Filter(data, filterArr);
+            return resultArr;
+
+        }
+        /// <summary>
+        /// 滤波数组
+        /// </summary>
+        /// <param name="inData">输入的数据</param>
+        /// <param name="filterArr">滤波数组，可以自定义</param>
+        /// <returns></returns>
+        public float[] Filter(float[] inData, float[] filterArr)
+        {
+            float[] outArr = new float[64];
+            outArr = inData;
+            MathNet.Numerics.Complex32[] mathNetComplexArr = new MathNet.Numerics.Complex32[64];
+            for (int i = 0; i < mathNetComplexArr.Length; i++)
+            {
+                mathNetComplexArr[i] = new MathNet.Numerics.Complex32((float)outArr[i], 0);
+            }
+            Fourier.Forward(mathNetComplexArr);//傅里叶变换
+            for (int i = 0; i < mathNetComplexArr.Length; i++)
+            {
+                mathNetComplexArr[i] = new MathNet.Numerics.Complex32(mathNetComplexArr[i].Real * filterArr[i], mathNetComplexArr[i].Imaginary * filterArr[i]);
+            }
+            float[] ArrFreq = new float[64];
+            for (int i = 0; i < ArrFreq.Length; i++)
+            {
+                ArrFreq[i] = (float)Math.Sqrt(mathNetComplexArr[i].Imaginary * mathNetComplexArr[i].Imaginary + mathNetComplexArr[i].Real * mathNetComplexArr[i].Real);//利用LineRenderer显示频域结果
+            }
+            Fourier.Inverse(mathNetComplexArr);//逆傅里叶变换
+            for (int i = 0; i < mathNetComplexArr.Length; i++)
+            {
+                outArr[i] = mathNetComplexArr[i].Real;
+            }
+            return outArr;
         }
     }
 }
